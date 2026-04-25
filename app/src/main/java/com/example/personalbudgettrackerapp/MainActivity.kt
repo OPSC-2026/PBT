@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
                 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
-                        when (authViewModel.currentScreen) {
+                        when (authViewModel.uiState.currentScreen) {
                             AuthScreen.Login -> LoginScreen(authViewModel)
                             AuthScreen.Register -> RegisterScreen(authViewModel)
                             AuthScreen.Home -> HomeScreen(authViewModel)
@@ -46,9 +46,10 @@ fun HomeScreen(viewModel: AuthViewModel) {
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "Bem-vindo! ${auth.currentUser?.displayName}", style = androidx.compose.material3.MaterialTheme.typography.headlineLarge)
+            Text(text = "Welcome!", style = androidx.compose.material3.MaterialTheme.typography.headlineLarge)
+            Text(text = "${auth.currentUser?.displayName}", style = androidx.compose.material3.MaterialTheme.typography.headlineLarge)
             Button(onClick = { viewModel.logout() }) {
-                Text("Sair")
+                Text("Logout")
             }
         }
     }

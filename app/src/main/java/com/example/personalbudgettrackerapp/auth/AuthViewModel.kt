@@ -6,70 +6,98 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 
-sealed class AuthScreen {
-    object Login : AuthScreen()
-    object Register : AuthScreen()
-    object Home : AuthScreen()
+sealed interface AuthScreen {
+    data object Login : AuthScreen
+    data object Register : AuthScreen
+    data object Home : AuthScreen
 }
+
+data class AuthUiState(
+    val currentScreen: AuthScreen = AuthScreen.Login,
+    val isLoading: Boolean = false,
+    val error: String? = null
+)
 
 class AuthViewModel : ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     
-    var currentScreen by mutableStateOf<AuthScreen>(
-        if (auth.currentUser != null) AuthScreen.Home else AuthScreen.Login
+    var uiState by mutableStateOf(
+        AuthUiState(
+            currentScreen = if (auth.currentUser != null) AuthScreen.Home else AuthScreen.Login
+        )
     )
         private set
 
-    var error by mutableStateOf<String?>(null)
-        private set
-
     fun setScreen(screen: AuthScreen) {
-        error = null
-        currentScreen = screen
+        uiState = uiState.copy(currentScreen = screen, error = null)
     }
 
     fun login(email: String, password: String) {
         if (email.isBlank() || password.isBlank()) {
-            error = "email and password required"
+            uiState = uiState.copy(error = "Please fill in all fields")
             return
         }
-
+        
+        uiState = uiState.copy(isLoading = true, error = null)
+        
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    currentScreen = AuthScreen.Home
+                val newState = if (task.isSuccessful) {
+                    uiState.copy(currentScreen = AuthScreen.Home, isLoading = false)
                 } else {
-                    error = task.exception?.localizedMessage ?: "Erro ao fazer login"
+                    uiState.copy(
+                        error = task.exception?.localizedMessage ?: "Invalid email or password",
+                        isLoading = false
+                    )
                 }
+                uiState = newState
             }
     }
 
-    fun register(email: String, password: String, confirm: String) {
-        if (email.isBlank() || password.isBlank() || confirm.isBlank()) {
-            error = "Preencha todos os campos"
+    fun register(name: String, email: String, password: String, confirm: String) {
+        if (name.isBlank() || email.isBlank() || password.isBlank() || confirm.isBlank()) {
+            uiState = uiState.copy(error = "Please fill in all fields")
             return
         }
         
         if (password != confirm) {
-            error = "Senhas não coincidem"
+            uiState = uiState.copy(error = "Passwords do not match")
             return
         }
+
+        if (password.length < 6) {
+            uiState = uiState.copy(error = "Password must be at least 6 characters")
+            return
+        }
+        
+        uiState = uiState.copy(isLoading = true, error = null)
         
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    currentScreen = AuthScreen.Home
+                    val user = auth.currentUser
+                    val profileUpdates = com.google.firebase.auth.userProfileChangeRequest {
+                        displayName = name
+                    }
+                    
+                    user?.updateProfile(profileUpdates)
+                        ?.addOnCompleteListener { updateTask ->
+                            uiState = uiState.copy(
+                                currentScreen = AuthScreen.Home,
+                                isLoading = false
+                            )
+                        }
                 } else {
-                    error = task.exception?.localizedMessage ?: "Erro ao registrar"
+                    uiState = uiState.copy(
+                        error = task.exception?.localizedMessage ?: "Registration failed",
+                        isLoading = false
+                    )
                 }
             }
     }
 
     fun logout() {
         auth.signOut()
-        currentScreen = AuthScreen.Login
+        uiState = uiState.copy(currentScreen = AuthScreen.Login)
     }
-
 }
-
-

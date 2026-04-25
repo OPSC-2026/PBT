@@ -26,6 +26,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
 
       # Set Current Date As Env Variable
       - name: Set current date as env variable

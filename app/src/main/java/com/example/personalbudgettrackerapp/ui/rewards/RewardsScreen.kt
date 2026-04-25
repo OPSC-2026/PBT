@@ -1,0 +1,496 @@
+package com.example.personalbudgettrackerapp.ui.rewards
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.personalbudgettrackerapp.auth.AuthScreen
+import com.example.personalbudgettrackerapp.auth.AuthViewModel
+import com.example.personalbudgettrackerapp.ui.theme.Yellow
+import java.text.SimpleDateFormat
+import java.util.*
+
+data class Achievement(
+    val id: String,
+    val name: String,
+    val description: String,
+    val icon: ImageVector,
+    val unlocked: Boolean,
+    val unlockedAt: Long? = null,
+    val progress: Float = 0f,
+    val condition: String
+)
+
+@Composable
+fun RewardsScreen(viewModel: AuthViewModel) {
+    val achievements = remember {
+        listOf(
+            Achievement(
+                id = "1", 
+                name = "Budget Master", 
+                description = "Stay within budget for a month", 
+                icon = Icons.Default.EmojiEvents,
+                unlocked = true,
+                progress = 50f,
+                condition = "budget_master"
+            ),
+            Achievement(
+                id = "2", 
+                name = "Expense Tracker", 
+                description = "Log expenses 7 days in a row", 
+                icon = Icons.Default.CalendarToday,
+                unlocked = false,
+                progress = 40f,
+                condition = "expense_tracker"
+            ),
+            Achievement(
+                id = "3", 
+                name = "Saving Champion", 
+                description = "Use less than 80% of your budget", 
+                icon = Icons.Default.Savings,
+                unlocked = false,
+                progress = 10f,
+                condition = "saving_champion"
+            ),
+            Achievement(
+                id = "4", 
+                name = "First Step", 
+                description = "Add your first expense", 
+                icon = Icons.Default.Star,
+                unlocked = true,
+                unlockedAt = System.currentTimeMillis() - 86400000,
+                progress = 100f,
+                condition = "first_expense"
+            ),
+            Achievement(
+                id = "5", 
+                name = "Category Creator", 
+                description = "Create a custom category", 
+                icon = Icons.Default.CreateNewFolder,
+                unlocked = false,
+                progress = 0f,
+                condition = "category_creator"
+            )
+        )
+    }
+
+    val unlockedCount = achievements.count { it.unlocked }
+    val totalCount = achievements.size
+    val progress = (unlockedCount.toFloat() / totalCount)
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        item {
+            HeaderSection(unlockedCount, totalCount, progress)
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                StatsSection(unlockedCount, totalCount)
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Text(
+                    text = "ALL BADGES",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+
+        items(achievements) { achievement ->
+            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                AchievementItem(achievement)
+            }
+        }
+
+        item {
+            MotivationalCard()
+        }
+    }
+}
+
+@Composable
+fun HeaderSection(unlockedCount: Int, totalCount: Int, progress: Float) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                MaterialTheme.colorScheme.primary, 
+                RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
+            )
+            .padding(top = 48.dp, bottom = 32.dp, start = 16.dp, end = 16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(bottom = 16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(
+                        MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f), 
+                        RoundedCornerShape(16.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.EmojiEvents,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(
+                    text = "Achievements",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "$unlockedCount of $totalCount unlocked",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                )
+            }
+        }
+
+        // Progress Card inside Header
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.1f)),
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Overall Progress",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                    )
+                    Text(
+                        text = "${(progress * 100).toInt()}%",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(CircleShape),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
+                )
+                Text(
+                    text = "Keep tracking your expenses to unlock more badges!",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f),
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun StatsSection(unlockedCount: Int, totalCount: Int) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        StatCard(
+            modifier = Modifier.weight(1f),
+            icon = Icons.Default.EmojiEvents,
+            value = unlockedCount.toString(),
+            label = "Unlocked",
+            iconColor = MaterialTheme.colorScheme.primary,
+            iconBg = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+        )
+        StatCard(
+            modifier = Modifier.weight(1f),
+            icon = Icons.Default.Lock,
+            value = (totalCount - unlockedCount).toString(),
+            label = "Locked",
+            iconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            iconBg = MaterialTheme.colorScheme.surfaceVariant
+        )
+        StatCard(
+            modifier = Modifier.weight(1f),
+            icon = Icons.Default.AutoAwesome,
+            value = totalCount.toString(),
+            label = "Total",
+            iconColor = Color(0xFFFACC15),
+            iconBg = Color(0xFFFACC15).copy(alpha = 0.1f)
+        )
+    }
+}
+
+@Composable
+fun StatCard(modifier: Modifier, icon: ImageVector, value: String, label: String, iconColor: Color, iconBg: Color) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(12.dp),
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(iconBg, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(imageVector = icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(20.dp))
+            }
+            Text(text = value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(text = label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+fun AchievementItem(achievement: Achievement) {
+    if (achievement.unlocked) {
+        AchievementUnlocked(achievement)
+    } else {
+        AchievementLocked(achievement)
+    }
+}
+
+@Composable
+fun AchievementUnlocked(achievement: Achievement) {
+    OutlinedCard(
+        modifier = Modifier.fillMaxWidth().padding(0.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)),
+        border = BorderStroke(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f), width = 1.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = achievement.icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = achievement.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Surface(
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = CircleShape
+                    ) {
+                        Text(
+                            text = "UNLOCKED",
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 1.dp),
+                            fontSize = 8.sp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
+                Text(
+                    text = achievement.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2
+                )
+                if (achievement.unlockedAt != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Unlocked on ${SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(achievement.unlockedAt))}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AchievementLocked(achievement: Achievement) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = achievement.icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                    modifier = Modifier.size(28.dp)
+                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .offset(x = 2.dp, y = 2.dp)
+                        .size(18.dp)
+                        .background(MaterialTheme.colorScheme.surface, CircleShape)
+                        .padding(2.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(10.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = achievement.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = achievement.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Progress",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant )
+                    Text(
+                        text = "${achievement.progress.toInt()}%",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+
+                LinearProgressIndicator(
+                    progress = { achievement.progress / 100f },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(CircleShape),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MotivationalCard() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Icon(
+                imageVector = Icons.Default.AutoAwesome,
+                contentDescription = null,
+                tint = Yellow,
+                modifier = Modifier.size(32.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(text = "Keep Going!", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Track your expenses daily and stay within budget to unlock more achievements.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}

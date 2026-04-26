@@ -28,7 +28,8 @@ class AuthViewModel : ViewModel() {
     
     var uiState by mutableStateOf(
         AuthUiState(
-            currentScreen = if (auth.currentUser != null) AuthScreen.Home else AuthScreen.Login
+           // currentScreen = if (auth.currentUser != null) AuthScreen.Home else AuthScreen.Login
+            currentScreen = AuthScreen.Settings
         )
     )
         private set

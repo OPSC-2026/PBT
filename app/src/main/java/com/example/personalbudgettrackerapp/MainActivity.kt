@@ -33,7 +33,8 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         if (currentScreen == AppScreen.Home ||
                             currentScreen == AppScreen.Rewards ||
-                            currentScreen == AppScreen.Analytics) {
+                            currentScreen == AppScreen.Analytics ||
+                            currentScreen == AppScreen.Settings) {
                             BottomNav(appViewModel)
                         }
                     }
@@ -46,6 +47,7 @@ class MainActivity : ComponentActivity() {
                             AppScreen.Rewards -> RewardsScreen(appViewModel)
                             AppScreen.Analytics -> AnalyticsScreen(appViewModel)
                             AppScreen.AddExpense -> AddExpense(appViewModel)
+                            AppScreen.Settings -> com.example.personalbudgettrackerapp.ui.settings.SettingsScreen(appViewModel)
                         }
                     }
                 }

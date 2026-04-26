@@ -58,10 +58,11 @@ fun BottomNav(viewModel: AppViewModel) {
                         0 -> currentScreen == AppScreen.Home
                         2 -> currentScreen == AppScreen.Analytics
                         3 -> currentScreen == AppScreen.Rewards
+                        4 -> currentScreen == AppScreen.Settings
                         else -> false
                     }
                     
-                    val isEnabled = index == 0 || index == 2 || index == 3
+                    val isEnabled = index == 0 || index == 2 || index == 3 || index == 4
 
                     Column(
                         modifier = Modifier
@@ -75,6 +76,7 @@ fun BottomNav(viewModel: AppViewModel) {
                                     0 -> viewModel.setScreen(AppScreen.Home)
                                     2 -> viewModel.setScreen(AppScreen.Analytics)
                                     3 -> viewModel.setScreen(AppScreen.Rewards)
+                                    4 -> viewModel.setScreen(AppScreen.Settings)
                                 }
                             }
                             .padding(horizontal = 12.dp, vertical = 8.dp)

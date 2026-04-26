@@ -14,6 +14,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.personalbudgettrackerapp.auth.*
 import com.example.personalbudgettrackerapp.ui.analytics.AnalyticsScreen
 import com.example.personalbudgettrackerapp.ui.components.BottomNav
+import com.example.personalbudgettrackerapp.ui.expenses.AddExpense
 import com.example.personalbudgettrackerapp.ui.home.HomeScreen
 import com.example.personalbudgettrackerapp.ui.rewards.RewardsScreen
 import com.example.personalbudgettrackerapp.ui.theme.PersonalBudgetTrackerAppTheme
@@ -44,6 +45,7 @@ class MainActivity : ComponentActivity() {
                             AuthScreen.Home -> HomeScreen(authViewModel)
                             AuthScreen.Rewards -> RewardsScreen(authViewModel)
                             AuthScreen.Analytics -> AnalyticsScreen(authViewModel)
+                            AuthScreen.AddExpense -> AddExpense(authViewModel)
                         }
                     }
                 }

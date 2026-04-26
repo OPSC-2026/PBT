@@ -19,8 +19,10 @@ data class Category(
 )
 
 data class Budget(
+    val id: String,
     val month: Int,
     val year: Int,
+    val totalBudget: Double,
     val categoryBudgets: Map<String, Double>
 )
 

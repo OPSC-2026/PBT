@@ -21,6 +21,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -110,11 +112,22 @@ fun AddExpense(viewModel: AppViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surface)
-                    .padding(top = 48.dp, bottom = 12.dp, start = 8.dp, end = 16.dp)
+                    .drawBehind {
+                        val strokeWidth = 1.dp.toPx()
+                        val y = size.height - strokeWidth / 2
+                        drawLine(
+                            color = Color.LightGray.copy(alpha = 0.5f),
+                            start = Offset(0f, y),
+                            end = Offset(size.width, y),
+                            strokeWidth = strokeWidth
+                        )
+                    }
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
+                        .padding(top = 40.dp, bottom = 20.dp, start = 8.dp, end = 16.dp)
+
                 ) {
                     IconButton(onClick = { viewModel.setScreen(AppScreen.Home) }) {
                         Icon(
@@ -128,11 +141,7 @@ fun AddExpense(viewModel: AppViewModel) {
                         fontWeight = FontWeight.Bold
                     )
                 }
-                HorizontalDivider(
-                    modifier = Modifier.padding(top = 12.dp),
-                    thickness = 0.5.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
+
             }
         }
     ) { innerPadding ->

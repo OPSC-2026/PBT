@@ -14,6 +14,7 @@ sealed interface AppScreen {
     data object Rewards : AppScreen
     data object Analytics : AppScreen
     data object AddExpense : AppScreen
+    data object Categories : AppScreen
 }
 
 data class AppUiState(
@@ -128,5 +129,17 @@ class AppViewModel : ViewModel() {
             .addOnFailureListener { e ->
                 uiState = uiState.copy(isLoading = false, error = e.localizedMessage)
             }
+    }
+
+    fun deleteCategory(categoryId: String) {
+        // these dont do anything
+    }
+
+    fun updateCategory(category: com.example.personalbudgettrackerapp.data.CategoryExtended) {
+        // Mock implementation for now
+    }
+
+    fun addCategory(category: com.example.personalbudgettrackerapp.data.CategoryExtended) {
+        // Mock implementation for now
     }
 }

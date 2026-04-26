@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,12 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.personalbudgettrackerapp.AppScreen
+import com.example.personalbudgettrackerapp.AppViewModel
 import com.example.personalbudgettrackerapp.data.CategoryExtended
-import com.example.personalbudgettrackerapp.ui.theme.PersonalBudgetTrackerAppTheme
 import java.util.UUID
 
 /**
@@ -51,23 +52,27 @@ val COLOR_OPTIONS = listOf(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CategoryScreen(
-    categories: List<CategoryExtended>,
-    onAddCategory: (CategoryExtended) -> Unit,
-    onUpdateCategory: (CategoryExtended) -> Unit,
-    onDeleteCategory: (String) -> Unit,
-    onBack: () -> Unit
-) {
+fun CategoryScreen(viewModel: AppViewModel) {
+    // These would normally come from the viewModel
+    val categories = remember {
+        listOf(
+            CategoryExtended("1", "Food", Color(0xFFEF4444), "utensils", true),
+            CategoryExtended("2", "Transport", Color(0xFF3B82F6), "car", true),
+            CategoryExtended("3", "Entertainment", Color(0xFFA855F7), "gamepad-2", false),
+            CategoryExtended("4", "Shopping", Color(0xFFF59E0B), "shopping-cart", false)
+        )
+    }
+
     var showDialog by remember { mutableStateOf(false) }
     var editingCategory by remember { mutableStateOf<CategoryExtended?>(null) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Categories", fontWeight = FontWeight.SemiBold) },
+                title = { Text("Categories", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    IconButton(onClick = { viewModel.setScreen(AppScreen.Home) }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
@@ -100,7 +105,7 @@ fun CategoryScreen(
                         editingCategory = category
                         showDialog = true
                     },
-                    onDelete = { onDeleteCategory(category.id) }
+                    onDelete = { viewModel.deleteCategory(category.id) }
                 )
             }
 
@@ -121,9 +126,9 @@ fun CategoryScreen(
             onDismiss = { showDialog = false },
             onSave = { name, icon, color ->
                 if (editingCategory != null) {
-                    onUpdateCategory(editingCategory!!.copy(name = name, icon = icon, color = color))
+                    viewModel.updateCategory(editingCategory!!.copy(name = name, icon = icon, color = color))
                 } else {
-                    onAddCategory(CategoryExtended(UUID.randomUUID().toString(), name, color, icon, false))
+                    viewModel.addCategory(CategoryExtended(UUID.randomUUID().toString(), name, color, icon, false))
                 }
                 showDialog = false
             }
@@ -235,15 +240,23 @@ fun CategoryEditDialog(
                                 Box(
                                     modifier = Modifier
                                         .weight(1f)
+                                        .height(48.dp)
                                         .clip(RoundedCornerShape(12.dp))
                                         .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-                                        .clickable { selectedIcon = opt.id }
-                                        .padding(8.dp),
+                                        .clickable { selectedIcon = opt.id },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text(opt.emoji, fontSize = 20.sp)
-                                        Text(opt.label, fontSize = 10.sp, color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Text(opt.emoji, fontSize = 18.sp)
+                                        Text(
+                                            opt.label, 
+                                            fontSize = 9.sp, 
+                                            maxLines = 1,
+                                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
                                     }
                                 }
                             }
@@ -285,24 +298,3 @@ fun CategoryEditDialog(
 }
 
 fun getCategoryEmoji(iconId: String): String = ICON_OPTIONS.find { it.id == iconId }?.emoji ?: "📦"
-
-@Preview(showBackground = true)
-@Composable
-fun CategoryScreenPreview() {
-    val mockCategories = listOf(
-        CategoryExtended("1", "Food", Color(0xFFEF4444), "utensils", true),
-        CategoryExtended("2", "Transport", Color(0xFF3B82F6), "car", true),
-        CategoryExtended("3", "Entertainment", Color(0xFFA855F7), "gamepad-2", false),
-        CategoryExtended("4", "Shopping", Color(0xFFF59E0B), "shopping-cart", false)
-    )
-
-    PersonalBudgetTrackerAppTheme {
-        CategoryScreen(
-            categories = mockCategories,
-            onAddCategory = {},
-            onUpdateCategory = {},
-            onDeleteCategory = {},
-            onBack = {}
-        )
-    }
-}

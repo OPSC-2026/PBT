@@ -26,6 +26,9 @@ fun HomeScreen(viewModel: AppViewModel) {
             Button(onClick = { viewModel.setScreen(AppScreen.AddExpense) }) {
                 Text("Add Expense")
             }
+            Button(onClick = { viewModel.setScreen(AppScreen.Categories) }) {
+                Text("Manage Categories")
+            }
         }
     }
 }

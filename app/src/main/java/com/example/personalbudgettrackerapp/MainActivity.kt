@@ -16,6 +16,7 @@ import com.example.personalbudgettrackerapp.ui.analytics.AnalyticsScreen
 import com.example.personalbudgettrackerapp.ui.components.BottomNav
 import com.example.personalbudgettrackerapp.ui.home.HomeScreen
 import com.example.personalbudgettrackerapp.ui.rewards.RewardsScreen
+import com.example.personalbudgettrackerapp.ui.settings.SettingsScreen
 import com.example.personalbudgettrackerapp.ui.theme.PersonalBudgetTrackerAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -44,6 +45,7 @@ class MainActivity : ComponentActivity() {
                             AuthScreen.Home -> HomeScreen(authViewModel)
                             AuthScreen.Rewards -> RewardsScreen(authViewModel)
                             AuthScreen.Analytics -> AnalyticsScreen(authViewModel)
+                            AuthScreen.Settings -> SettingsScreen(authViewModel)
                         }
                     }
                 }

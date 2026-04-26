@@ -19,8 +19,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.personalbudgettrackerapp.auth.AuthScreen
-import com.example.personalbudgettrackerapp.auth.AuthViewModel
+import com.example.personalbudgettrackerapp.AppScreen
+import com.example.personalbudgettrackerapp.AppViewModel
 
 data class NavItem(
     val icon: ImageVector,
@@ -28,7 +28,7 @@ data class NavItem(
 )
 
 @Composable
-fun BottomNav(viewModel: AuthViewModel) {
+fun BottomNav(viewModel: AppViewModel) {
     val currentScreen = viewModel.uiState.currentScreen
     
     val navItems = listOf(
@@ -55,9 +55,9 @@ fun BottomNav(viewModel: AuthViewModel) {
             ) {
                 navItems.forEachIndexed { index, item ->
                     val isSelected = when (index) {
-                        0 -> currentScreen == AuthScreen.Home
-                        2 -> currentScreen == AuthScreen.Analytics
-                        3 -> currentScreen == AuthScreen.Rewards
+                        0 -> currentScreen == AppScreen.Home
+                        2 -> currentScreen == AppScreen.Analytics
+                        3 -> currentScreen == AppScreen.Rewards
                         else -> false
                     }
                     
@@ -72,9 +72,9 @@ fun BottomNav(viewModel: AuthViewModel) {
                             )
                             .clickable(enabled = isEnabled) {
                                 when(index) {
-                                    0 -> viewModel.setScreen(AuthScreen.Home)
-                                    2 -> viewModel.setScreen(AuthScreen.Analytics)
-                                    3 -> viewModel.setScreen(AuthScreen.Rewards)
+                                    0 -> viewModel.setScreen(AppScreen.Home)
+                                    2 -> viewModel.setScreen(AppScreen.Analytics)
+                                    3 -> viewModel.setScreen(AppScreen.Rewards)
                                 }
                             }
                             .padding(horizontal = 12.dp, vertical = 8.dp)

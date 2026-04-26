@@ -1,10 +1,11 @@
-package com.example.personalbudgettrackerapp.auth
+package com.example.personalbudgettrackerapp.ui.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Wallet
@@ -18,20 +19,50 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.personalbudgettrackerapp.AppScreen
+import com.example.personalbudgettrackerapp.AppViewModel
+
 @Composable
-fun LoginScreen(viewModel: AuthViewModel) {
+fun RegisterScreen(viewModel: AppViewModel) {
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(value = false) }
+    var showConfirmPassword by remember { mutableStateOf(value = false) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Back Button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            TextButton(
+                onClick = { viewModel.setScreen(AppScreen.Login) },
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Back to login",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         // Logo and Title Section
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -58,7 +89,7 @@ fun LoginScreen(viewModel: AuthViewModel) {
                 color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-                text = "Your personal budget tracker",
+                text = "Start your financial journey",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSecondary
             )
@@ -67,20 +98,9 @@ fun LoginScreen(viewModel: AuthViewModel) {
         // Card Container
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp) // React code has border-0 shadow-lg, shadow-lg is approx 4-8dp
-        ) {
-            // Shadow simulation with elevation if needed, but M3 Card elevation handles it. 
-            // React code says border-0 shadow-lg.
-        }
-        
-        // Re-writing Card content properly
-        Card(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         ) {
             Column(
                 modifier = Modifier
@@ -89,17 +109,37 @@ fun LoginScreen(viewModel: AuthViewModel) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Welcome back",
+                    text = "Create account",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Sign in to continue tracking your finances",
+                    text = "Sign up to start tracking your budget",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSecondary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 4.dp, bottom = 24.dp)
                 )
+
+                // Name Input
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        "Name",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        placeholder = { Text("Choose a name") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        singleLine = true
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Email Input
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -112,7 +152,7 @@ fun LoginScreen(viewModel: AuthViewModel) {
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
-                        placeholder = { Text("Enter your email") },
+                        placeholder = { Text("Choose an email") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true
@@ -132,7 +172,7 @@ fun LoginScreen(viewModel: AuthViewModel) {
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        placeholder = { Text("Enter your password") },
+                        placeholder = { Text("Create a password") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true,
@@ -141,6 +181,36 @@ fun LoginScreen(viewModel: AuthViewModel) {
                             IconButton(onClick = { showPassword = !showPassword }) {
                                 Icon(
                                     imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = null
+                                )
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Confirm Password Input
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        "Confirm Password",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    OutlinedTextField(
+                        value = confirmPassword,
+                        onValueChange = { confirmPassword = it },
+                        placeholder = { Text("Confirm your password") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        singleLine = true,
+                        visualTransformation = if (showConfirmPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { showConfirmPassword = !showConfirmPassword }) {
+                                Icon(
+                                    imageVector = if (showConfirmPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                                     contentDescription = null
                                 )
                             }
@@ -162,9 +232,9 @@ fun LoginScreen(viewModel: AuthViewModel) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Sign In Button
+                // Create Account Button
                 Button(
-                    onClick = { viewModel.login(email, password) },
+                    onClick = { viewModel.register(name, email, password, confirmPassword) },
                     enabled = !viewModel.uiState.isLoading,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -178,7 +248,7 @@ fun LoginScreen(viewModel: AuthViewModel) {
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text("Sign In", fontWeight = FontWeight.Bold)
+                        Text("Create Account", fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -186,21 +256,21 @@ fun LoginScreen(viewModel: AuthViewModel) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Registration Link
+        // Footer
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "Don't have an account? ",
+                "Already have an account? ",
                 color = MaterialTheme.colorScheme.onSecondary,
                 style = MaterialTheme.typography.bodyMedium
             )
             TextButton(
-                onClick = { viewModel.setScreen(AuthScreen.Register) },
+                onClick = { viewModel.setScreen(AppScreen.Login) },
                 contentPadding = PaddingValues(0.dp)
             ) {
                 Text(
-                    "Sign up",
+                    "Sign in",
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )

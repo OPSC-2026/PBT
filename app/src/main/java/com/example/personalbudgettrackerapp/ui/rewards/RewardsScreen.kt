@@ -21,8 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.personalbudgettrackerapp.auth.AuthScreen
-import com.example.personalbudgettrackerapp.auth.AuthViewModel
+import com.example.personalbudgettrackerapp.AppViewModel
 import com.example.personalbudgettrackerapp.ui.theme.Yellow
 import java.text.SimpleDateFormat
 import java.util.*
@@ -39,7 +38,7 @@ data class Achievement(
 )
 
 @Composable
-fun RewardsScreen(viewModel: AuthViewModel) {
+fun RewardsScreen(viewModel: AppViewModel) {
     val achievements = remember {
         listOf(
             Achievement(

@@ -13,6 +13,8 @@ sealed interface AuthScreen {
     data object Rewards : AuthScreen
 
     data object Analytics : AuthScreen
+
+    data object Settings : AuthScreen
 }
 
 data class AuthUiState(

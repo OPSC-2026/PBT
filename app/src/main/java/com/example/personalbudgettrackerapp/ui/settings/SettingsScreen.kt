@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.personalbudgettrackerapp.AppScreen
 import com.example.personalbudgettrackerapp.AppViewModel
 import com.example.personalbudgettrackerapp.data.Category
 import com.example.personalbudgettrackerapp.ui.expenses.getCategoryIcon
@@ -292,7 +293,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
                         SettingsItem(
                             icon = Icons.Default.FolderOpen,
                             title = "Manage Categories",
-                            onClick = { /* Navigate to categories */ },
+                            onClick = { viewModel.setScreen(AppScreen.Categories) },
                             iconColor = MaterialTheme.colorScheme.primary,
                             containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                         )

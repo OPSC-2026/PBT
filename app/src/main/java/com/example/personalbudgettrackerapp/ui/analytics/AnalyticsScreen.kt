@@ -49,7 +49,7 @@ fun AnalyticsScreen(viewModel: AppViewModel) {
         Category("4", "Shopping", Color(0xFFFF9800), "shopping-cart")
     )
     val budgets: List<Budget> = listOf(
-        Budget(now.monthValue, now.year, mapOf("1" to 2000.0, "2" to 1000.0, "3" to 800.0, "4" to 1500.0))
+        Budget("",now.monthValue, now.year, 5000.00,mapOf("1" to 2000.0, "2" to 1000.0, "3" to 800.0, "4" to 1500.0))
     )
 
     var timeRange by remember { mutableStateOf(TimeRange.MONTH) }

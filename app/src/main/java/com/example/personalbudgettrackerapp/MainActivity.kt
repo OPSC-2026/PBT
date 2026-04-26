@@ -18,6 +18,7 @@ import com.example.personalbudgettrackerapp.ui.components.BottomNav
 import com.example.personalbudgettrackerapp.ui.expenses.AddExpense
 import com.example.personalbudgettrackerapp.ui.home.HomeScreen
 import com.example.personalbudgettrackerapp.ui.rewards.RewardsScreen
+import com.example.personalbudgettrackerapp.ui.settings.SettingsScreen
 import com.example.personalbudgettrackerapp.ui.theme.PersonalBudgetTrackerAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -34,7 +35,8 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         if (currentScreen == AppScreen.Home ||
                             currentScreen == AppScreen.Rewards ||
-                            currentScreen == AppScreen.Analytics) {
+                            currentScreen == AppScreen.Analytics ||
+                            currentScreen == AppScreen.Settings) {
                             BottomNav(appViewModel)
                         }
                     }
@@ -48,6 +50,7 @@ class MainActivity : ComponentActivity() {
                             AppScreen.Analytics -> AnalyticsScreen(appViewModel)
                             AppScreen.AddExpense -> AddExpense(appViewModel)
                             AppScreen.Categories -> CategoryScreen(appViewModel)
+                            AppScreen.Settings -> SettingsScreen(appViewModel)
                         }
                     }
                 }

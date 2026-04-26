@@ -53,15 +53,8 @@ val COLOR_OPTIONS = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryScreen(viewModel: AppViewModel) {
-    // These would normally come from the viewModel
-    val categories = remember {
-        listOf(
-            CategoryExtended("1", "Food", Color(0xFFEF4444), "utensils", true),
-            CategoryExtended("2", "Transport", Color(0xFF3B82F6), "car", true),
-            CategoryExtended("3", "Entertainment", Color(0xFFA855F7), "gamepad-2", false),
-            CategoryExtended("4", "Shopping", Color(0xFFF59E0B), "shopping-cart", false)
-        )
-    }
+    val uiState = viewModel.uiState
+    val categories = uiState.categories
 
     var showDialog by remember { mutableStateOf(false) }
     var editingCategory by remember { mutableStateOf<CategoryExtended?>(null) }

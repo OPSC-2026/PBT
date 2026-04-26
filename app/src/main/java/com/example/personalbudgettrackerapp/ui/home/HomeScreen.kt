@@ -9,12 +9,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.example.personalbudgettrackerapp.auth.AuthScreen
-import com.example.personalbudgettrackerapp.auth.AuthViewModel
+import com.example.personalbudgettrackerapp.AppScreen
+import com.example.personalbudgettrackerapp.AppViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun HomeScreen(viewModel: AuthViewModel) {
+fun HomeScreen(viewModel: AppViewModel) {
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -23,7 +23,7 @@ fun HomeScreen(viewModel: AuthViewModel) {
             Button(onClick = { viewModel.logout() }) {
                 Text("Logout")
             }
-            Button(onClick = {viewModel.setScreen(AuthScreen.AddExpense)}) {
+            Button(onClick = { viewModel.setScreen(AppScreen.AddExpense) }) {
                 Text("Add Expense")
             }
         }

@@ -1,37 +1,39 @@
-package com.example.personalbudgettrackerapp.auth
+package com.example.personalbudgettrackerapp
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
-sealed interface AuthScreen {
-    data object Login : AuthScreen
-    data object Register : AuthScreen
-    data object Home : AuthScreen
-    data object Rewards : AuthScreen
-    data object Analytics : AuthScreen
-    data object AddExpense : AuthScreen
+sealed interface AppScreen {
+    data object Login : AppScreen
+    data object Register : AppScreen
+    data object Home : AppScreen
+    data object Rewards : AppScreen
+    data object Analytics : AppScreen
+    data object AddExpense : AppScreen
 }
 
-data class AuthUiState(
-    val currentScreen: AuthScreen = AuthScreen.Login,
+data class AppUiState(
+    val currentScreen: AppScreen = AppScreen.Login,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
 )
 
-class AuthViewModel : ViewModel() {
+class AppViewModel : ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
     
     var uiState by mutableStateOf(
-        AuthUiState(
-            currentScreen = if (auth.currentUser != null) AuthScreen.Home else AuthScreen.Login
+        AppUiState(
+            currentScreen = if (auth.currentUser != null) AppScreen.Home else AppScreen.Login
         )
     )
         private set
 
-    fun setScreen(screen: AuthScreen) {
+    fun setScreen(screen: AppScreen) {
         uiState = uiState.copy(currentScreen = screen, error = null)
     }
 
@@ -46,7 +48,7 @@ class AuthViewModel : ViewModel() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 val newState = if (task.isSuccessful) {
-                    uiState.copy(currentScreen = AuthScreen.Home, isLoading = false)
+                    uiState.copy(currentScreen = AppScreen.Home, isLoading = false)
                 } else {
                     uiState.copy(
                         error = task.exception?.localizedMessage ?: "Invalid email or password",
@@ -84,9 +86,9 @@ class AuthViewModel : ViewModel() {
                     }
                     
                     user?.updateProfile(profileUpdates)
-                        ?.addOnCompleteListener { updateTask ->
+                        ?.addOnCompleteListener { _ ->
                             uiState = uiState.copy(
-                                currentScreen = AuthScreen.Home,
+                                currentScreen = AppScreen.Home,
                                 isLoading = false
                             )
                         }
@@ -101,6 +103,30 @@ class AuthViewModel : ViewModel() {
 
     fun logout() {
         auth.signOut()
-        uiState = uiState.copy(currentScreen = AuthScreen.Login)
+        uiState = uiState.copy(currentScreen = AppScreen.Login)
+    }
+
+    fun addExpense(amount: Double, date: java.time.LocalDate, categoryId: String, description: String, onSuccess: () -> Unit) {
+        val userId = auth.currentUser?.uid ?: return
+        
+        uiState = uiState.copy(isLoading = true, error = null)
+        
+        val expense = hashMapOf(
+            "amount" to amount,
+            "date" to date.toString(),
+            "categoryId" to categoryId,
+            "description" to description,
+            "createdAt" to com.google.firebase.Timestamp.now()
+        )
+        
+        db.collection("users").document(userId).collection("expenses")
+            .add(expense)
+            .addOnSuccessListener {
+                uiState = uiState.copy(isLoading = false)
+                onSuccess()
+            }
+            .addOnFailureListener { e ->
+                uiState = uiState.copy(isLoading = false, error = e.localizedMessage)
+            }
     }
 }

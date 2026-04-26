@@ -22,7 +22,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.personalbudgettrackerapp.auth.AuthViewModel
+import com.example.personalbudgettrackerapp.AppViewModel
 import com.example.personalbudgettrackerapp.data.Budget
 import com.example.personalbudgettrackerapp.data.Category
 import com.example.personalbudgettrackerapp.data.Expense
@@ -32,7 +32,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 
 @Composable
-fun AnalyticsScreen(viewModel: AuthViewModel) {
+fun AnalyticsScreen(viewModel: AppViewModel) {
     val now = LocalDate.now()
     val expenses: List<Expense> = listOf(
         Expense("1", 250.0, now.minusDays(1), "1", "Dinner"),

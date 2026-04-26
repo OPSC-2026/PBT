@@ -29,16 +29,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.personalbudgettrackerapp.auth.AuthScreen
-import com.example.personalbudgettrackerapp.auth.AuthViewModel
+import com.example.personalbudgettrackerapp.AppScreen
+import com.example.personalbudgettrackerapp.AppViewModel
 import com.example.personalbudgettrackerapp.data.Category
 import com.example.personalbudgettrackerapp.ui.components.CustomDatePicker
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddExpense(viewModel: AuthViewModel) {
+fun AddExpense(viewModel: AppViewModel) {
     val categories = remember {
         listOf(
             Category("1", "Groceries", Color(0xFF22C55E), "shopping-cart"),
@@ -100,7 +99,7 @@ fun AddExpense(viewModel: AuthViewModel) {
 
         LaunchedEffect(Unit) {
             kotlinx.coroutines.delay(1500)
-            viewModel.setScreen(AuthScreen.Home)
+            viewModel.setScreen(AppScreen.Home)
         }
         return
     }
@@ -117,7 +116,7 @@ fun AddExpense(viewModel: AuthViewModel) {
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    IconButton(onClick = { viewModel.setScreen(AuthScreen.Home) }) {
+                    IconButton(onClick = { viewModel.setScreen(AppScreen.Home) }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
@@ -266,9 +265,10 @@ fun AddExpense(viewModel: AuthViewModel) {
                 Text(text = "Add receipt (optional)", fontWeight = FontWeight.Medium)
             }
 
-            if (error.isNotEmpty()) {
+            val combinedError = error.ifEmpty { viewModel.uiState.error ?: "" }
+            if (combinedError.isNotEmpty()) {
                 Text(
-                    text = error,
+                    text = combinedError,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
@@ -288,14 +288,28 @@ fun AddExpense(viewModel: AuthViewModel) {
                     } else if (description.trim().isEmpty()) {
                         error = "Please enter a description"
                     } else {
-                        // Logic to add expense would go here
-                        success = true
+                        viewModel.addExpense(
+                            amount = amountVal,
+                            date = date,
+                            categoryId = categoryId,
+                            description = description.trim(),
+                            onSuccess = { success = true }
+                        )
                     }
                 },
+                enabled = !viewModel.uiState.isLoading,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text(text = "Save Expense", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                if (viewModel.uiState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(text = "Save Expense", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
             }
         }
     }
@@ -330,7 +344,7 @@ fun CardCategory(
             )
             .border(
                 width = 0.5.dp,
-                color = if (isSelected) Color.Transparent else MaterialTheme.colorScheme.outlineVariant,
+                color = if (isSelected) Color.Transparent else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                 shape = RoundedCornerShape(12.dp)
             )
             .clickable { onSelect() }

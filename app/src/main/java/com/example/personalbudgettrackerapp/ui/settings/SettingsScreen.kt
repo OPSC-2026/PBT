@@ -28,7 +28,7 @@ fun SettingsScreen(authViewModel: AuthViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        // 🔹 HEADER (same style as Login)
+        // 🔹 HEADER (EXACT MATCH TO LOGIN SCREEN)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(bottom = 32.dp)
@@ -55,17 +55,18 @@ fun SettingsScreen(authViewModel: AuthViewModel) {
             Text(
                 text = "Montrack",
                 style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground   // ✅ FIXED (IMPORTANT)
             )
 
             Text(
-                text = "Manage your budget settings",
+                text = "Your personal budget tracker",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSecondary
             )
         }
 
-        // 🔹 SETTINGS CARD (same design as login card)
+        // 🔹 SETTINGS CARD
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
@@ -117,7 +118,7 @@ fun SettingsScreen(authViewModel: AuthViewModel) {
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        if (saved) "Saved!" else "Save Settings",
+                        text = if (saved) "Saved!" else "Save Settings",
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -142,7 +143,7 @@ fun SettingsScreen(authViewModel: AuthViewModel) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Optional navigation button (kept from your code)
+        // Navigation back (optional)
         TextButton(
             onClick = { authViewModel.setScreen(AuthScreen.Home) }
         ) {

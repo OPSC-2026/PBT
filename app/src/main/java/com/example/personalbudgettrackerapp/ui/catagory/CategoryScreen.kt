@@ -1,4 +1,4 @@
-package com.example.personalbudgettrackerapp.ui.Catagory
+package com.example.personalbudgettrackerapp.ui.catagory
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

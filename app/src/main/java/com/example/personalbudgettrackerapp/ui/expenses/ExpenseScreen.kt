@@ -231,16 +231,28 @@ fun Header(
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
-                Button(
-                    onClick = onToggleFilters,
-                    variant = if (showFilters) ButtonVariant.Primary else ButtonVariant.Outline,
-                    modifier = Modifier.height(36.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 12.dp)
-                ) {
-                    Icon(Icons.Default.FilterList, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text("Filter", fontSize = 12.sp)
+                if(showFilters){
+                    Button(
+                        onClick = onToggleFilters,
+                        modifier = Modifier.height(36.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp)
+                    ) {
+                        Icon(Icons.Default.FilterList, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("Filter", fontSize = 12.sp)
+                    }
+                } else {
+                    OutlinedButton(
+                        onClick = onToggleFilters,
+                        modifier = Modifier.height(36.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp)
+                    ) {
+                        Icon(Icons.Default.FilterList, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("Filter", fontSize = 12.sp)
+                    }
                 }
             }
 
@@ -313,19 +325,6 @@ fun Header(
         }
     }
 }
-
-// Utility to handle Button variants easily
-enum class ButtonVariant { Primary, Outline }
-@Composable
-fun Button(onClick: () -> Unit, variant: ButtonVariant, modifier: Modifier = Modifier, shape: androidx.compose.ui.graphics.Shape, contentPadding: PaddingValues, content: @Composable RowScope.() -> Unit) {
-    if (variant == ButtonVariant.Primary) {
-        androidx.compose.material3.Button(onClick = onClick, modifier = modifier, shape = shape, contentPadding = contentPadding, content = content)
-    } else {
-        OutlinedButton(onClick = onClick, modifier = modifier, shape = shape, contentPadding = contentPadding, content = content)
-    }
-}
-
-
 
 @Composable
 fun ExpenseItem(expense: Expense, category: Category?, onClick: () -> Unit) {

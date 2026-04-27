@@ -33,24 +33,11 @@ import kotlin.math.abs
 
 @Composable
 fun AnalyticsScreen(viewModel: AppViewModel) {
+    val uiState = viewModel.uiState
     val now = LocalDate.now()
-    val expenses: List<Expense> = listOf(
-        Expense("1", 250.0, now.minusDays(1), "1", "Dinner"),
-        Expense("2", 120.0, now.minusDays(2), "2", "Uber"),
-        Expense("3", 500.0, now.minusDays(3), "4", "New Shoes"),
-        Expense("4", 150.0, now.minusDays(4), "1", "Groceries"),
-        Expense("5", 300.0, now.minusDays(5), "3", "Movie Night"),
-        Expense("6", 100.0, now.minusDays(6), "2", "Bus fare")
-    )
-    val categories: List<Category> = listOf(
-        Category("1", "Food", Color(0xFFE91E63), "utensils"),
-        Category("2", "Transport", Color(0xFF2196F3), "car"),
-        Category("3", "Entertainment", Color(0xFF9C27B0), "gamepad-2"),
-        Category("4", "Shopping", Color(0xFFFF9800), "shopping-cart")
-    )
-    val budgets: List<Budget> = listOf(
-        Budget("",now.monthValue, now.year, 5000.00,mapOf("1" to 2000.0, "2" to 1000.0, "3" to 800.0, "4" to 1500.0))
-    )
+    val expenses = uiState.expenses
+    val categories = uiState.categories
+    val budgets = uiState.budgets
 
     var timeRange by remember { mutableStateOf(TimeRange.MONTH) }
 

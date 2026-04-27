@@ -125,34 +125,32 @@ fun HomeScreen(viewModel: AppViewModel) {
 
             // Category Spending Section
             item {
-                Text("CategorySpendingCard Here")
-//                val categorySpending = remember(monthlyExpenses, uiState.categories, currentBudget) {
-//                    val spendingMap = monthlyExpenses.groupBy { it.categoryId }
-//                        .mapValues { it.value.sumOf { e -> e.amount } }
-//                    uiState.categories.map { cat ->
-//                        CategorySpending(
-//                            category = cat,
-//                            spent = spendingMap[cat.id] ?: 0.0,
-//                            budget = currentBudget?.categoryBudgets?.get(cat.id) ?: 0.0
-//                        )
-//                    }
-//                }
-//                CategorySpendingCard(
-//                    categorySpending = categorySpending,
-//                    currencyFormatter = currencyFormatter,
-//                    onNavigate = { /* Manage categories screen */ }
-//                )
+                val categorySpending = remember(monthlyExpenses, uiState.categories, currentBudget) {
+                    val spendingMap = monthlyExpenses.groupBy { it.categoryId }
+                        .mapValues { it.value.sumOf { e -> e.amount } }
+                    uiState.categories.map { cat ->
+                        CategorySpending(
+                            category = cat,
+                            spent = spendingMap[cat.id] ?: 0.0,
+                            budget = currentBudget?.categoryBudgets?.get(cat.id) ?: 0.0
+                        )
+                    }
+                }
+                CategorySpendingCard(
+                    categorySpending = categorySpending,
+                    currencyFormatter = currencyFormatter,
+                    onNavigate = { viewModel.setScreen(AppScreen.Categories) }
+                )
             }
 
             // Recent Expenses Section
             item {
-                Text("RecentExpensesCard Here")
-//                RecentExpensesCard(
-//                    expenses = uiState.expenses.asSequence().sortedByDescending { it.date }.take(4).toList(),
-//                    categories = uiState.categories,
-//                    currencyFormatter = currencyFormatter,
-//                    onNavigate = { /* All expenses screen */ }
-//                )
+                RecentExpensesCard(
+                    expenses = uiState.expenses.asSequence().sortedByDescending { it.date }.take(4).toList(),
+                    categories = uiState.categories,
+                    currencyFormatter = currencyFormatter,
+                    onNavigate = { viewModel.setScreen(AppScreen.Analytics) }
+                )
             }
 
             item{

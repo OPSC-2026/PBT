@@ -56,13 +56,14 @@ fun BottomNav(viewModel: AppViewModel) {
                 navItems.forEachIndexed { index, item ->
                     val isSelected = when (index) {
                         0 -> currentScreen == AppScreen.Home
+                        1 -> currentScreen == AppScreen.Expense
                         2 -> currentScreen == AppScreen.Analytics
                         3 -> currentScreen == AppScreen.Rewards
                         4 -> currentScreen == AppScreen.Settings
                         else -> false
                     }
                     
-                    val isEnabled = index == 0 || index == 2 || index == 3 || index == 4
+                    val isEnabled = index == 0 || index == 1 || index == 2 || index == 3 || index == 4
 
                     Column(
                         modifier = Modifier
@@ -74,6 +75,7 @@ fun BottomNav(viewModel: AppViewModel) {
                             .clickable(enabled = isEnabled) {
                                 when(index) {
                                     0 -> viewModel.setScreen(AppScreen.Home)
+                                    1 -> viewModel.setScreen(AppScreen.Expense)
                                     2 -> viewModel.setScreen(AppScreen.Analytics)
                                     3 -> viewModel.setScreen(AppScreen.Rewards)
                                     4 -> viewModel.setScreen(AppScreen.Settings)

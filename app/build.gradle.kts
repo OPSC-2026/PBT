@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.material3)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.googleid)

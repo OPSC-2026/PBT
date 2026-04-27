@@ -15,8 +15,10 @@ import com.example.personalbudgettrackerapp.ui.auth.LoginScreen
 import com.example.personalbudgettrackerapp.ui.auth.RegisterScreen
 import com.example.personalbudgettrackerapp.ui.components.BottomNav
 import com.example.personalbudgettrackerapp.ui.expenses.AddExpense
+import com.example.personalbudgettrackerapp.ui.expenses.ExpenseScreen
 import com.example.personalbudgettrackerapp.ui.home.HomeScreen
 import com.example.personalbudgettrackerapp.ui.rewards.RewardsScreen
+import com.example.personalbudgettrackerapp.ui.settings.SettingsScreen
 import com.example.personalbudgettrackerapp.ui.theme.PersonalBudgetTrackerAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -34,7 +36,8 @@ class MainActivity : ComponentActivity() {
                         if (currentScreen == AppScreen.Home ||
                             currentScreen == AppScreen.Rewards ||
                             currentScreen == AppScreen.Analytics ||
-                            currentScreen == AppScreen.Settings) {
+                            currentScreen == AppScreen.Settings ||
+                            currentScreen == AppScreen.Expense) {
                             BottomNav(appViewModel)
                         }
                     }
@@ -47,7 +50,8 @@ class MainActivity : ComponentActivity() {
                             AppScreen.Rewards -> RewardsScreen(appViewModel)
                             AppScreen.Analytics -> AnalyticsScreen(appViewModel)
                             AppScreen.AddExpense -> AddExpense(appViewModel)
-                            AppScreen.Settings -> com.example.personalbudgettrackerapp.ui.settings.SettingsScreen(appViewModel)
+                            AppScreen.Settings -> SettingsScreen(appViewModel)
+                            AppScreen.Expense -> ExpenseScreen(appViewModel)
                         }
                     }
                 }

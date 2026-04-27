@@ -80,8 +80,12 @@ fun HomeScreen(viewModel: AppViewModel) {
                     percentUsed = percentUsed,
                     remaining = remaining,
                     isOverBudget = isOverBudget,
-                    currencyFormatter = currencyFormatter
-                ) { viewModel.logout() }
+                    currencyFormatter = currencyFormatter,
+                    onLogout = {viewModel.logout()},
+                    onManageCategory = {
+                          viewModel.setScreen(AppScreen.Categories)
+                    }
+                )
             }
 
             // Quick Stats Section
@@ -124,32 +128,34 @@ fun HomeScreen(viewModel: AppViewModel) {
 
             // Category Spending Section
             item {
-                val categorySpending = remember(monthlyExpenses, uiState.categories, currentBudget) {
-                    val spendingMap = monthlyExpenses.groupBy { it.categoryId }
-                        .mapValues { it.value.sumOf { e -> e.amount } }
-                    uiState.categories.map { cat ->
-                        CategorySpending(
-                            category = cat,
-                            spent = spendingMap[cat.id] ?: 0.0,
-                            budget = currentBudget?.categoryBudgets?.get(cat.id) ?: 0.0
-                        )
-                    }
-                }
-                CategorySpendingCard(
-                    categorySpending = categorySpending,
-                    currencyFormatter = currencyFormatter,
-                    onNavigate = { /* Manage categories screen */ }
-                )
+                Text("CategorySpendingCard Here")
+//                val categorySpending = remember(monthlyExpenses, uiState.categories, currentBudget) {
+//                    val spendingMap = monthlyExpenses.groupBy { it.categoryId }
+//                        .mapValues { it.value.sumOf { e -> e.amount } }
+//                    uiState.categories.map { cat ->
+//                        CategorySpending(
+//                            category = cat,
+//                            spent = spendingMap[cat.id] ?: 0.0,
+//                            budget = currentBudget?.categoryBudgets?.get(cat.id) ?: 0.0
+//                        )
+//                    }
+//                }
+//                CategorySpendingCard(
+//                    categorySpending = categorySpending,
+//                    currencyFormatter = currencyFormatter,
+//                    onNavigate = { /* Manage categories screen */ }
+//                )
             }
 
             // Recent Expenses Section
             item {
-                RecentExpensesCard(
-                    expenses = uiState.expenses.asSequence().sortedByDescending { it.date }.take(4).toList(),
-                    categories = uiState.categories,
-                    currencyFormatter = currencyFormatter,
-                    onNavigate = { /* All expenses screen */ }
-                )
+                Text("RecentExpensesCard Here")
+//                RecentExpensesCard(
+//                    expenses = uiState.expenses.asSequence().sortedByDescending { it.date }.take(4).toList(),
+//                    categories = uiState.categories,
+//                    currencyFormatter = currencyFormatter,
+//                    onNavigate = { /* All expenses screen */ }
+//                )
             }
 
             item{
@@ -182,7 +188,8 @@ fun HeaderSection(
     remaining: Double,
     isOverBudget: Boolean,
     currencyFormatter: NumberFormat,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onManageCategory: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -286,6 +293,9 @@ fun HeaderSection(
                         fontWeight = FontWeight.Medium
                     )
                 }
+            }
+            Button(onClick = { onManageCategory() }) {
+                Text("Manage Categories")
             }
         }
     }

@@ -13,10 +13,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.personalbudgettrackerapp.ui.analytics.AnalyticsScreen
 import com.example.personalbudgettrackerapp.ui.auth.LoginScreen
 import com.example.personalbudgettrackerapp.ui.auth.RegisterScreen
+import com.example.personalbudgettrackerapp.ui.catagory.CategoryScreen
 import com.example.personalbudgettrackerapp.ui.components.BottomNav
 import com.example.personalbudgettrackerapp.ui.expenses.AddExpense
 import com.example.personalbudgettrackerapp.ui.home.HomeScreen
 import com.example.personalbudgettrackerapp.ui.rewards.RewardsScreen
+import com.example.personalbudgettrackerapp.ui.settings.SettingsScreen
 import com.example.personalbudgettrackerapp.ui.theme.PersonalBudgetTrackerAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -47,11 +49,8 @@ class MainActivity : ComponentActivity() {
                             AppScreen.Rewards -> RewardsScreen(appViewModel)
                             AppScreen.Analytics -> AnalyticsScreen(appViewModel)
                             AppScreen.AddExpense -> AddExpense(appViewModel)
-                            AppScreen.Settings -> com.example.personalbudgettrackerapp.ui.settings.SettingsScreen(appViewModel)
-                            AppScreen.CategoryManagement -> com.example.personalbudgettrackerapp.ui.settings.CategoryManagementScreen(
-                                viewModel = appViewModel,
-                                onBack = { appViewModel.setScreen(AppScreen.Settings) }
-                            )
+                            AppScreen.Categories -> CategoryScreen(appViewModel)
+                            AppScreen.Settings -> SettingsScreen(appViewModel)
                         }
                     }
                 }

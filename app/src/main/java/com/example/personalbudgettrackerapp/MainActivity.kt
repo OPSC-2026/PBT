@@ -16,6 +16,7 @@ import com.example.personalbudgettrackerapp.ui.auth.RegisterScreen
 import com.example.personalbudgettrackerapp.ui.catagory.CategoryScreen
 import com.example.personalbudgettrackerapp.ui.components.BottomNav
 import com.example.personalbudgettrackerapp.ui.expenses.AddExpense
+import com.example.personalbudgettrackerapp.ui.expenses.ExpenseScreen
 import com.example.personalbudgettrackerapp.ui.home.HomeScreen
 import com.example.personalbudgettrackerapp.ui.rewards.RewardsScreen
 import com.example.personalbudgettrackerapp.ui.settings.SettingsScreen
@@ -36,7 +37,8 @@ class MainActivity : ComponentActivity() {
                         if (currentScreen == AppScreen.Home ||
                             currentScreen == AppScreen.Rewards ||
                             currentScreen == AppScreen.Analytics ||
-                            currentScreen == AppScreen.Settings) {
+                            currentScreen == AppScreen.Settings ||
+                            currentScreen == AppScreen.Expense) {
                             BottomNav(appViewModel)
                         }
                     }
@@ -48,6 +50,7 @@ class MainActivity : ComponentActivity() {
                             AppScreen.Home -> HomeScreen(appViewModel)
                             AppScreen.Rewards -> RewardsScreen(appViewModel)
                             AppScreen.Analytics -> AnalyticsScreen(appViewModel)
+                            AppScreen.Expense -> ExpenseScreen(appViewModel)
                             AppScreen.AddExpense -> AddExpense(appViewModel)
                             AppScreen.Categories -> CategoryScreen(appViewModel)
                             AppScreen.Settings -> SettingsScreen(appViewModel)

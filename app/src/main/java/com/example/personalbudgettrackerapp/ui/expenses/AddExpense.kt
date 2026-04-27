@@ -35,24 +35,13 @@ import androidx.compose.ui.unit.sp
 import com.example.personalbudgettrackerapp.AppScreen
 import com.example.personalbudgettrackerapp.AppViewModel
 import com.example.personalbudgettrackerapp.data.Category
+import com.example.personalbudgettrackerapp.data.getCategoryIcon
 import com.example.personalbudgettrackerapp.ui.components.CustomDatePicker
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddExpense(viewModel: AppViewModel) {
-    val categories = remember {
-        listOf(
-            Category("1", "Groceries", Color(0xFF22C55E), "shopping-cart"),
-            Category("2", "Transport", Color(0xFF3B82F6), "car"),
-            Category("3", "Entertainment", Color(0xFFA855F7), "gamepad-2"),
-            Category("4", "Utilities", Color(0xFFF59E0B), "zap"),
-            Category("5", "Food", Color(0xFFE91E63), "utensils"),
-            Category("6", "Home", Color(0xFF607D8B), "home"),
-            Category("7", "Health", Color(0xFFF44336), "heart"),
-            Category("8", "Work", Color(0xFF795548), "briefcase")
-        )
-    }
 
     var amount by remember { mutableStateOf("") }
     var date by remember { mutableStateOf(LocalDate.now()) }
@@ -145,12 +134,12 @@ fun AddExpense(viewModel: AppViewModel) {
 
             }
         }
-    ) { innerPadding ->
+    ) { padding ->
         LazyColumn(
             modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(16.dp),
+                .padding(padding)
+                .fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
 
         ) {
@@ -233,7 +222,7 @@ fun AddExpense(viewModel: AppViewModel) {
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.heightIn(max = 200.dp)
                     ) {
-                        items(categories) { category ->
+                        items(viewModel.uiState.categories) { category ->
                             CardCategory(
                                 category,
                                 isSelected = categoryId == category.id,
@@ -347,20 +336,6 @@ fun AddExpense(viewModel: AppViewModel) {
                 }
             }
         }
-    }
-}
-
-fun getCategoryIcon(iconName: String): String {
-    return when (iconName) {
-        "shopping-cart" -> "🛒"
-        "car" -> "🚗"
-        "gamepad-2" -> "🎮"
-        "zap" -> "⚡"
-        "utensils" -> "🍽️"
-        "home" -> "🏠"
-        "heart" -> "❤️"
-        "briefcase" -> "💼"
-        else -> "📦"
     }
 }
 

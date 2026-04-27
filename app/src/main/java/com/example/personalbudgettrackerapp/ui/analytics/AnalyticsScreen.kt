@@ -102,10 +102,9 @@ fun AnalyticsScreen(viewModel: AppViewModel) {
                 TimeRangeSelector(selected = timeRange, onSelected = { timeRange = it })
             }
         }
-    ) { innerPadding ->
+    ) { padding ->
         LazyColumn(
-            modifier = Modifier
-                .padding(innerPadding)
+            modifier = Modifier.padding(padding)
                 .fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -152,8 +151,6 @@ fun AnalyticsScreen(viewModel: AppViewModel) {
                     TopExpensesList(filteredExpenses, categories)
                 }
             }
-
-            item { Spacer(modifier = Modifier.height(64.dp)) }
         }
     }
 }

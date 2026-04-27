@@ -82,9 +82,6 @@ fun HomeScreen(viewModel: AppViewModel) {
                     isOverBudget = isOverBudget,
                     currencyFormatter = currencyFormatter,
                     onLogout = {viewModel.logout()},
-                    onManageCategory = {
-                          viewModel.setScreen(AppScreen.Categories)
-                    }
                 )
             }
 
@@ -189,7 +186,6 @@ fun HeaderSection(
     isOverBudget: Boolean,
     currencyFormatter: NumberFormat,
     onLogout: () -> Unit,
-    onManageCategory: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -293,9 +289,6 @@ fun HeaderSection(
                         fontWeight = FontWeight.Medium
                     )
                 }
-            }
-            Button(onClick = { onManageCategory() }) {
-                Text("Manage Categories")
             }
         }
     }

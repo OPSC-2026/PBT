@@ -15,7 +15,8 @@ data class Category(
     val id: String,
     val name: String,
     val color: Color,
-    val icon: String
+    val icon: String,
+    val isDefault: Boolean = false
 )
 
 data class Budget(
@@ -28,4 +29,18 @@ data class Budget(
 
 enum class TimeRange {
     WEEK, MONTH, YEAR
+}
+
+fun getCategoryIcon(iconName: String): String {
+    return when (iconName) {
+        "shopping-cart" -> "🛒"
+        "car" -> "🚗"
+        "gamepad-2" -> "🎮"
+        "zap" -> "⚡"
+        "utensils" -> "🍽️"
+        "home" -> "🏠"
+        "heart" -> "❤️"
+        "briefcase" -> "💼"
+        else -> "📦"
+    }
 }

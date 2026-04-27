@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.personalbudgettrackerapp.AppScreen
@@ -49,20 +50,21 @@ fun BottomNav(viewModel: AppViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .windowInsetsPadding(WindowInsets.navigationBars)
-                    .padding(vertical = 8.dp, horizontal = 8.dp),
+                    .padding(vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 navItems.forEachIndexed { index, item ->
                     val isSelected = when (index) {
                         0 -> currentScreen == AppScreen.Home
+                        1 -> currentScreen == AppScreen.Expense
                         2 -> currentScreen == AppScreen.Analytics
                         3 -> currentScreen == AppScreen.Rewards
                         4 -> currentScreen == AppScreen.Settings
                         else -> false
                     }
                     
-                    val isEnabled = index == 0 || index == 2 || index == 3 || index == 4
+                    val isEnabled = index == 0 || index == 1 || index == 2 || index == 3 || index == 4
 
                     Column(
                         modifier = Modifier
@@ -74,13 +76,14 @@ fun BottomNav(viewModel: AppViewModel) {
                             .clickable(enabled = isEnabled) {
                                 when(index) {
                                     0 -> viewModel.setScreen(AppScreen.Home)
+                                    1 -> viewModel.setScreen(AppScreen.Expense)
                                     2 -> viewModel.setScreen(AppScreen.Analytics)
                                     3 -> viewModel.setScreen(AppScreen.Rewards)
                                     4 -> viewModel.setScreen(AppScreen.Settings)
                                 }
                             }
                             .padding(horizontal = 12.dp, vertical = 8.dp)
-                            .widthIn(min = 64.dp),
+                            .weight(1f),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -95,7 +98,9 @@ fun BottomNav(viewModel: AppViewModel) {
 
                         Text(
                             text = item.label,
-                            fontSize = 11.sp,
+                            fontSize = 10.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                             fontWeight = FontWeight.Medium,
                             color = if (isSelected) MaterialTheme.colorScheme.primary 
                                     else MaterialTheme.colorScheme.onSurfaceVariant

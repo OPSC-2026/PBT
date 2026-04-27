@@ -7,14 +7,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.personalbudgettrackerapp.data.CategoryExtended
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-
-import androidx.compose.ui.graphics.Color
-
 import com.example.personalbudgettrackerapp.data.Budget
 import com.example.personalbudgettrackerapp.data.Category
 import com.example.personalbudgettrackerapp.data.Expense
@@ -31,7 +27,7 @@ sealed interface AppScreen {
     data object AddExpense : AppScreen
     data object Categories : AppScreen
     data object Settings : AppScreen
-    data object CategoryManagement : AppScreen
+    data object Expense : AppScreen
 }
 
 data class CategorySpending(
@@ -49,7 +45,7 @@ data class AppUiState(
     val currentScreen: AppScreen = AppScreen.Login,
     val isLoading: Boolean = false,
     val error: String? = null,
-    val categories: List<CategoryExtended> = emptyList(),
+    val categories: List<Category> = emptyList(),
     val expenses: List<Expense> = emptyList(),
     val budgets: List<Budget> = emptyList()
 )
@@ -61,13 +57,6 @@ class AppViewModel : ViewModel() {
     var uiState by mutableStateOf(
         AppUiState(
             currentScreen = if (auth.currentUser != null) AppScreen.Home else AppScreen.Login,
-            expenses = listOf(
-                Expense("1", 250.0, LocalDate.now(), "1", "Groceries"),
-                Expense("2", 100.0, LocalDate.now().minusDays(1), "2", "Fuel"),
-                Expense("3", 50.0, LocalDate.now().minusDays(2), "5", "Coffee"),
-                Expense("4", 1200.0, LocalDate.now(), "5", "Dinner"),
-                Expense("5", 300.0, LocalDate.now().minusDays(4), "3", "Movie")
-            ),
             budgets = listOf(
                 Budget("b1", LocalDate.now().monthValue, LocalDate.now().year, 5000.0, mapOf(
                     "1" to 1000.0, "2" to 500.0, "5" to 1500.0
@@ -80,6 +69,7 @@ class AppViewModel : ViewModel() {
     init {
         if (auth.currentUser != null) {
             observeCategories()
+            observeExpenses()
         }
     }
 
@@ -95,7 +85,7 @@ class AppViewModel : ViewModel() {
                 if (snapshot != null) {
                     val categories = snapshot.documents.mapNotNull { doc ->
                         try {
-                            CategoryExtended(
+                            Category(
                                 id = doc.id,
                                 name = doc.getString("name") ?: "",
                                 color = androidx.compose.ui.graphics.Color(doc.getLong("color")?.toInt() ?: 0),
@@ -108,6 +98,35 @@ class AppViewModel : ViewModel() {
                         }
                     }
                     uiState = uiState.copy(categories = categories)
+                }
+            }
+    }
+
+    private fun observeExpenses() {
+        val userId = auth.currentUser?.uid ?: return
+        db.collection("users").document(userId).collection("expenses")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.e(TAG, "Expenses listen failed.", e)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    val expenses = snapshot.documents.mapNotNull { doc ->
+                        try {
+                            Expense(
+                                id = doc.id,
+                                amount = doc.getDouble("amount") ?: 0.0,
+                                date = LocalDate.parse(doc.getString("date") ?: LocalDate.now().toString()),
+                                categoryId = doc.getString("categoryId") ?: "",
+                                description = doc.getString("description") ?: ""
+                            )
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error parsing expense", e)
+                            null
+                        }
+                    }
+                    uiState = uiState.copy(expenses = expenses.sortedByDescending { it.date })
                 }
             }
     }
@@ -126,6 +145,7 @@ class AppViewModel : ViewModel() {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     observeCategories()
+                    observeExpenses()
                     uiState = uiState.copy(currentScreen = AppScreen.Home, isLoading = false)
                 } else {
                     Log.e(TAG, "Login failed", task.exception)
@@ -157,17 +177,10 @@ class AppViewModel : ViewModel() {
                     val user = auth.currentUser
                     val profileUpdates = com.google.firebase.auth.userProfileChangeRequest { displayName = name }
                     user?.updateProfile(profileUpdates)?.addOnCompleteListener { _ ->
+                        observeCategories()
+                        observeExpenses()
                         uiState = uiState.copy(currentScreen = AppScreen.Home, isLoading = false)
                     }
-
-                    user?.updateProfile(profileUpdates)
-                        ?.addOnCompleteListener { _ ->
-                            observeCategories()
-                            uiState = uiState.copy(
-                                currentScreen = AppScreen.Home,
-                                isLoading = false
-                            )
-                        }
                 } else {
                     Log.e(TAG, "Registration failed", task.exception)
                     uiState = uiState.copy(
@@ -180,7 +193,7 @@ class AppViewModel : ViewModel() {
 
     fun logout() {
         auth.signOut()
-        uiState = uiState.copy(currentScreen = AppScreen.Login)
+        uiState = uiState.copy(currentScreen = AppScreen.Login, expenses = emptyList(), categories = emptyList())
     }
 
     fun addExpense(amount: Double, date: LocalDate, categoryId: String, description: String, onSuccess: () -> Unit) {
@@ -201,6 +214,15 @@ class AppViewModel : ViewModel() {
             }
             .addOnFailureListener { e ->
                 uiState = uiState.copy(isLoading = false, error = e.localizedMessage)
+            }
+    }
+
+    fun deleteExpense(expenseId: String) {
+        val userId = auth.currentUser?.uid ?: return
+        db.collection("users").document(userId).collection("expenses").document(expenseId)
+            .delete()
+            .addOnFailureListener { e ->
+                uiState = uiState.copy(error = e.localizedMessage)
             }
     }
 
@@ -237,10 +259,10 @@ class AppViewModel : ViewModel() {
      * Updates an existing category's information in Firestore.
      * Converts the category's color to an ARGB integer for storage.
      *
-     * @param category The [CategoryExtended] object containing the updated data.
+     * @param category The [Category] object containing the updated data.
      * @param onSuccess Callback triggered after the update is successfully persisted.
      */
-    fun updateCategory(category: CategoryExtended, onSuccess: () -> Unit = {}) {
+    fun updateCategory(category: Category, onSuccess: () -> Unit = {}) {
         val userId = auth.currentUser?.uid ?: return
 
         uiState = uiState.copy(isLoading = true, error = null)
@@ -273,10 +295,10 @@ class AppViewModel : ViewModel() {
      * Adds a new category to the user's Firestore collection.
      * The Firestore document ID is automatically generated upon addition.
      *
-     * @param category The [CategoryExtended] data to be saved as a new category.
+     * @param category The [Category] data to be saved as a new category.
      * @param onSuccess Callback triggered after the new category is successfully added.
      */
-    fun addCategory(category: CategoryExtended, onSuccess: () -> Unit = {}) {
+    fun addCategory(category: Category, onSuccess: () -> Unit = {}) {
         val userId = auth.currentUser?.uid ?: return
 
         uiState = uiState.copy(isLoading = true, error = null)

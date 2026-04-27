@@ -275,7 +275,7 @@ fun Header(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, gap = 8.dp) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text("Date Range", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                     }
@@ -325,10 +325,7 @@ fun Button(onClick: () -> Unit, variant: ButtonVariant, modifier: Modifier = Mod
     }
 }
 
-@Composable
-fun Row(modifier: Modifier = Modifier, verticalAlignment: Alignment.Vertical, gap: androidx.compose.ui.unit.Dp, content: @Composable RowScope.() -> Unit) {
-    androidx.compose.foundation.layout.Row(modifier = modifier, verticalAlignment = verticalAlignment, horizontalArrangement = Arrangement.spacedBy(gap), content = content)
-}
+
 
 @Composable
 fun ExpenseItem(expense: Expense, category: Category?, onClick: () -> Unit) {

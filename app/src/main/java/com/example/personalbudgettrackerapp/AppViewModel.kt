@@ -7,13 +7,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.personalbudgettrackerapp.data.Budget
+import com.example.personalbudgettrackerapp.data.Category
+import com.example.personalbudgettrackerapp.data.Expense
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import com.example.personalbudgettrackerapp.data.Budget
-import com.example.personalbudgettrackerapp.data.Category
-import com.example.personalbudgettrackerapp.data.Expense
 import java.time.LocalDate
 
 private const val TAG = "AppViewModel"
@@ -56,12 +56,7 @@ class AppViewModel : ViewModel() {
 
     var uiState by mutableStateOf(
         AppUiState(
-            currentScreen = if (auth.currentUser != null) AppScreen.Home else AppScreen.Login,
-            budgets = listOf(
-                Budget("b1", LocalDate.now().monthValue, LocalDate.now().year, 5000.0, mapOf(
-                    "1" to 1000.0, "2" to 500.0, "5" to 1500.0
-                ))
-            )
+            currentScreen = if (auth.currentUser != null) AppScreen.Home else AppScreen.Login
         )
     )
         private set
@@ -70,6 +65,7 @@ class AppViewModel : ViewModel() {
         if (auth.currentUser != null) {
             observeCategories()
             observeExpenses()
+            observeBudgets()
         }
     }
 
@@ -131,6 +127,43 @@ class AppViewModel : ViewModel() {
             }
     }
 
+    private fun observeBudgets() {
+        val userId = auth.currentUser?.uid ?: return
+        db.collection("users").document(userId).collection("budgets")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.e(TAG, "Budgets listen failed.", e)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    val budgets = snapshot.documents.mapNotNull { doc ->
+                        try {
+                            val categoryBudgetsRaw = doc.get("categoryBudgets") as? Map<String, Any> ?: emptyMap()
+                            val categoryBudgets = categoryBudgetsRaw.mapValues { (_, value) ->
+                                when (value) {
+                                    is Double -> value
+                                    is Long -> value.toDouble()
+                                    else -> 0.0
+                                }
+                            }
+                            Budget(
+                                id = doc.id,
+                                month = doc.getLong("month")?.toInt() ?: 1,
+                                year = doc.getLong("year")?.toInt() ?: 2026,
+                                totalBudget = doc.getDouble("totalBudget") ?: 0.0,
+                                categoryBudgets = categoryBudgets
+                            )
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error parsing budget", e)
+                            null
+                        }
+                    }
+                    uiState = uiState.copy(budgets = budgets)
+                }
+            }
+    }
+
     fun setScreen(screen: AppScreen) {
         uiState = uiState.copy(currentScreen = screen, error = null)
     }
@@ -146,6 +179,7 @@ class AppViewModel : ViewModel() {
                 if (task.isSuccessful) {
                     observeCategories()
                     observeExpenses()
+                    observeBudgets()
                     uiState = uiState.copy(currentScreen = AppScreen.Home, isLoading = false)
                 } else {
                     Log.e(TAG, "Login failed", task.exception)
@@ -179,6 +213,7 @@ class AppViewModel : ViewModel() {
                     user?.updateProfile(profileUpdates)?.addOnCompleteListener { _ ->
                         observeCategories()
                         observeExpenses()
+                        observeBudgets()
                         uiState = uiState.copy(currentScreen = AppScreen.Home, isLoading = false)
                     }
                 } else {
@@ -193,7 +228,7 @@ class AppViewModel : ViewModel() {
 
     fun logout() {
         auth.signOut()
-        uiState = uiState.copy(currentScreen = AppScreen.Login, expenses = emptyList(), categories = emptyList())
+        uiState = uiState.copy(currentScreen = AppScreen.Login, expenses = emptyList(), categories = emptyList(), budgets = emptyList())
     }
 
     fun addExpense(amount: Double, date: LocalDate, categoryId: String, description: String, onSuccess: () -> Unit) {
@@ -221,6 +256,28 @@ class AppViewModel : ViewModel() {
         val userId = auth.currentUser?.uid ?: return
         db.collection("users").document(userId).collection("expenses").document(expenseId)
             .delete()
+            .addOnFailureListener { e ->
+                uiState = uiState.copy(error = e.localizedMessage)
+            }
+    }
+
+    /**
+     * Updates the total budget or category limits for a specific month.
+     * Uses the format "YYYY_MM" as document ID.
+     */
+    fun updateBudget(month: Int, year: Int, total: Double, categoryLimits: Map<String, Double>) {
+        val userId = auth.currentUser?.uid ?: return
+        val budgetId = "${year}_${String.format("%02d", month)}"
+        
+        val budgetData = hashMapOf(
+            "month" to month,
+            "year" to year,
+            "totalBudget" to total,
+            "categoryBudgets" to categoryLimits
+        )
+
+        db.collection("users").document(userId).collection("budgets").document(budgetId)
+            .set(budgetData)
             .addOnFailureListener { e ->
                 uiState = uiState.copy(error = e.localizedMessage)
             }

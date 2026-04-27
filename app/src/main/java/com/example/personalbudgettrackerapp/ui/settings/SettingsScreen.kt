@@ -23,8 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.personalbudgettrackerapp.AppScreen
 import com.example.personalbudgettrackerapp.AppViewModel
-import com.example.personalbudgettrackerapp.data.Category
-import com.example.personalbudgettrackerapp.ui.expenses.getCategoryIcon
+import com.example.personalbudgettrackerapp.data.getCategoryIcon
 import com.google.firebase.auth.FirebaseAuth
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -36,33 +35,42 @@ fun SettingsScreen(viewModel: AppViewModel) {
     val auth = FirebaseAuth.getInstance()
     val user = auth.currentUser
     val username = user?.displayName ?: "User"
+    val uiState = viewModel.uiState
+    val categories = uiState.categories
+    
     val creationDate = user?.metadata?.creationTimestamp?.let {
         val date = Date(it)
         val sdf = java.text.SimpleDateFormat("MMM yyyy", Locale.US)
         sdf.format(date)
     } ?: "Recently"
 
-    val categories = remember {
-        listOf(
-            Category("1", "Groceries", Color(0xFF22C55E), "shopping-cart"),
-            Category("2", "Transport", Color(0xFF3B82F6), "car"),
-            Category("3", "Entertainment", Color(0xFFA855F7), "gamepad-2"),
-            Category("4", "Utilities", Color(0xFFF59E0B), "zap"),
-            Category("5", "Food", Color(0xFFE91E63), "utensils"),
-            Category("6", "Home", Color(0xFF607D8B), "home"),
-            Category("7", "Health", Color(0xFFF44336), "heart"),
-            Category("8", "Work", Color(0xFF795548), "briefcase")
-        )
-    }
-
     val now = LocalDate.now()
     val monthName = now.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.US))
 
-    var totalBudget by remember { mutableStateOf("") }
-    var categoryBudgetsLocal by remember { 
-        mutableStateOf(categories.associate { it.id to "" }) 
+    // Load current budget if exists
+    val currentBudget = remember(uiState.budgets) {
+        uiState.budgets.find { it.month == now.monthValue && it.year == now.year }
     }
+
+    var totalBudget by remember { mutableStateOf("") }
+    var categoryBudgetsLocal by remember { mutableStateOf(mapOf<String, String>()) }
     var saved by remember { mutableStateOf(false) }
+
+    // Initialize values when budget is loaded or categories change
+    LaunchedEffect(currentBudget, categories) {
+        if (totalBudget.isEmpty() && currentBudget != null) {
+            totalBudget = if (currentBudget.totalBudget > 0) currentBudget.totalBudget.toString() else ""
+        }
+        
+        val newMap = categoryBudgetsLocal.toMutableMap()
+        categories.forEach { cat ->
+            if (!newMap.containsKey(cat.id)) {
+                val existingLimit = currentBudget?.categoryBudgets?.get(cat.id) ?: 0.0
+                newMap[cat.id] = if (existingLimit > 0) existingLimit.toString() else ""
+            }
+        }
+        categoryBudgetsLocal = newMap
+    }
 
     val totalCategoryBudget = categoryBudgetsLocal.values.sumOf { it.toDoubleOrNull() ?: 0.0 }
     val totalBudgetValue = totalBudget.toDoubleOrNull() ?: 0.0
@@ -266,7 +274,13 @@ fun SettingsScreen(viewModel: AppViewModel) {
                 // Save Button
                 Button(
                     onClick = { 
-                        // In a real app, we'd call viewModel.setBudget(...)
+                        val finalLimits = categoryBudgetsLocal.mapValues { it.value.toDoubleOrNull() ?: 0.0 }
+                        viewModel.updateBudget(
+                            month = now.monthValue,
+                            year = now.year,
+                            total = totalBudgetValue,
+                            categoryLimits = finalLimits
+                        )
                         saved = true 
                     },
                     modifier = Modifier

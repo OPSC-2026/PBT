@@ -48,6 +48,10 @@ class MainActivity : ComponentActivity() {
                             AppScreen.Analytics -> AnalyticsScreen(appViewModel)
                             AppScreen.AddExpense -> AddExpense(appViewModel)
                             AppScreen.Settings -> com.example.personalbudgettrackerapp.ui.settings.SettingsScreen(appViewModel)
+                            AppScreen.CategoryManagement -> com.example.personalbudgettrackerapp.ui.settings.CategoryManagementScreen(
+                                viewModel = appViewModel,
+                                onBack = { appViewModel.setScreen(AppScreen.Settings) }
+                            )
                         }
                     }
                 }

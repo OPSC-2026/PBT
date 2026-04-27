@@ -292,7 +292,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
                         SettingsItem(
                             icon = Icons.Default.FolderOpen,
                             title = "Manage Categories",
-                            onClick = { /* Navigate to categories */ },
+                            onClick = { viewModel.setScreen(com.example.personalbudgettrackerapp.AppScreen.CategoryManagement) },
                             iconColor = MaterialTheme.colorScheme.primary,
                             containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                         )

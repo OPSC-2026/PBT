@@ -20,6 +20,7 @@ sealed interface AppScreen {
     data object Analytics : AppScreen
     data object AddExpense : AppScreen
     data object Settings : AppScreen
+    data object CategoryManagement : AppScreen
 }
 
 data class CategorySpending(

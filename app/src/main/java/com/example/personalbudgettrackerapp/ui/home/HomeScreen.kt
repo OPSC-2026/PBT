@@ -157,7 +157,7 @@ fun HomeScreen(viewModel: AppViewModel) {
                     expenses = uiState.expenses.asSequence().sortedByDescending { it.date }.take(4).toList(),
                     categories = uiState.categories,
                     currencyFormatter = currencyFormatter,
-                    onNavigate = { viewModel.setScreen(AppScreen.Analytics) }
+                    onNavigate = { viewModel.setScreen(AppScreen.Expense) }
                 )
             }
 

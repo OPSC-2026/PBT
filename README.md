@@ -34,3 +34,9 @@ The application utilizes a reactive state management approach, where the central
 2. A configured Firebase project with Authentication and Firestore enabled.
 3. The `google-services.json` configuration file placed in the `app/` directory.
 4. JDK 17 or higher.
+
+## Video Presentation
+[Watch Here](https://youtu.be/HCPA5yylDG0)
+
+## Download do App (APK)
+[Download Here](https://github.com/OPSC-2026/PBT/blob/main/buildActionResult/app-release-unsigned.apk)

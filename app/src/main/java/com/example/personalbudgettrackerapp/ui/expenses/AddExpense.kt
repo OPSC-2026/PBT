@@ -148,7 +148,7 @@ fun AddExpense(viewModel: AppViewModel) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
 
-        ) {
+            ) {
             item {
                 // Large amount input area with currency symbol
                 Card(

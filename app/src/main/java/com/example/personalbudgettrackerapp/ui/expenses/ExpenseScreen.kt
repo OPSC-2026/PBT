@@ -3,6 +3,7 @@ package com.example.personalbudgettrackerapp.ui.expenses
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -17,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -198,6 +201,7 @@ fun ExpenseScreen(viewModel: AppViewModel) {
         val category = categories.find { it.id == expense?.categoryId }
         if (expense != null) {
             ExpenseDetailDialog(
+                viewModel = viewModel,
                 expense = expense,
                 category = category,
                 onDismiss = { selectedExpenseId = null },
@@ -432,7 +436,9 @@ fun EmptyState(hasFilters: Boolean, onAddExpense: () -> Unit) {
  * Detailed view of a single expense shown in a dialog.
  */
 @Composable
-fun ExpenseDetailDialog(expense: Expense, category: Category?, onDismiss: () -> Unit, onDelete: () -> Unit) {
+fun ExpenseDetailDialog(viewModel: AppViewModel, expense: Expense, category: Category?, onDismiss: () -> Unit, onDelete: () -> Unit) {
+    val imageData = remember(expense.id) { viewModel.getImageLocally(expense.id) }
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(24.dp),
@@ -458,6 +464,22 @@ fun ExpenseDetailDialog(expense: Expense, category: Category?, onDismiss: () -> 
                     Column {
                         Text(expense.description, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         Text(category?.name ?: "No Category", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+
+                imageData?.let { data ->
+                    val bitmap = android.graphics.BitmapFactory.decodeByteArray(data, 0, data.size)
+                    if (bitmap != null) {
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = "Receipt image",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Crop
+                        )
                     }
                 }
 

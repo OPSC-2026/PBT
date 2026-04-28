@@ -200,7 +200,7 @@ class AppViewModel : ViewModel() {
                         val unlockedAt = doc.getLong("unlockedAt")
                         doc.id to (unlocked to unlockedAt)
                     }
-                    
+
                     val updatedAchievements = uiState.achievements.map { ach ->
                         val data = firestoreData[ach.id]
                         if (data != null) {

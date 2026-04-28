@@ -25,11 +25,16 @@ import com.example.personalbudgettrackerapp.data.Achievement
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * The Rewards Screen displays user achievements and badges.
+ * It uses gamification to encourage users to maintain their financial tracking habits.
+ */
 @Composable
 fun RewardsScreen(viewModel: AppViewModel) {
     val uiState = viewModel.uiState
     val achievements = uiState.achievements
 
+    // Calculate overall progress stats
     val unlockedCount = achievements.count { it.unlocked }
     val totalCount = achievements.size
     val progress = if (totalCount > 0) (unlockedCount.toFloat() / totalCount) else 0f
@@ -37,6 +42,7 @@ fun RewardsScreen(viewModel: AppViewModel) {
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
+        // Summary header with overall progress bar
         item {
             HeaderSection(unlockedCount, totalCount, progress)
         }
@@ -47,6 +53,7 @@ fun RewardsScreen(viewModel: AppViewModel) {
 
         item {
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                // Break down of unlocked vs locked achievements
                 StatsSection(unlockedCount, totalCount)
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -62,12 +69,14 @@ fun RewardsScreen(viewModel: AppViewModel) {
             }
         }
 
+        // List of individual achievement badges
         items(achievements) { achievement ->
             Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                 AchievementItem(achievement)
             }
         }
 
+        // Footer card with encouraging message
         item {
             MotivationalCard()
         }
@@ -78,6 +87,9 @@ fun RewardsScreen(viewModel: AppViewModel) {
     }
 }
 
+/**
+ * Renders the top section of the rewards screen, showing the overall achievement progress.
+ */
 @Composable
 fun HeaderSection(unlockedCount: Int, totalCount: Int, progress: Float) {
     Column(
@@ -125,7 +137,7 @@ fun HeaderSection(unlockedCount: Int, totalCount: Int, progress: Float) {
             }
         }
 
-        // Progress Card inside Header
+        // Progress Card providing a visual summary of completion
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.1f)),
             modifier = Modifier.fillMaxWidth(),
@@ -170,6 +182,9 @@ fun HeaderSection(unlockedCount: Int, totalCount: Int, progress: Float) {
     }
 }
 
+/**
+ * A row of small cards displaying numeric achievement statistics.
+ */
 @Composable
 fun StatsSection(unlockedCount: Int, totalCount: Int) {
     Row(
@@ -203,6 +218,9 @@ fun StatsSection(unlockedCount: Int, totalCount: Int) {
     }
 }
 
+/**
+ * A small reusable card for displaying a single achievement-related statistic.
+ */
 @Composable
 fun StatCard(modifier: Modifier, icon: ImageVector, value: String, label: String, iconColor: Color, iconBg: Color) {
     Card(
@@ -229,6 +247,9 @@ fun StatCard(modifier: Modifier, icon: ImageVector, value: String, label: String
     }
 }
 
+/**
+ * Handles the display of a single achievement, swapping between unlocked and locked states.
+ */
 @Composable
 fun AchievementItem(achievement: Achievement) {
     if (achievement.unlocked) {
@@ -238,6 +259,9 @@ fun AchievementItem(achievement: Achievement) {
     }
 }
 
+/**
+ * Visual representation of an achievement that has already been earned.
+ */
 @Composable
 fun AchievementUnlocked(achievement: Achievement) {
     OutlinedCard(
@@ -309,6 +333,9 @@ fun AchievementUnlocked(achievement: Achievement) {
     }
 }
 
+/**
+ * Visual representation of an achievement that is yet to be earned, showing a lock and current progress.
+ */
 @Composable
 fun AchievementLocked(achievement: Achievement) {
     Card(
@@ -321,6 +348,7 @@ fun AchievementLocked(achievement: Achievement) {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Icon with a lock overlay
             Box(
                 modifier = Modifier
                     .size(56.dp)
@@ -384,6 +412,7 @@ fun AchievementLocked(achievement: Achievement) {
                 }
                 Spacer(modifier = Modifier.height(4.dp))
 
+                // Shows how close the user is to unlocking this badge
                 LinearProgressIndicator(
                     progress = { achievement.progress / 100f },
                     modifier = Modifier
@@ -398,6 +427,9 @@ fun AchievementLocked(achievement: Achievement) {
     }
 }
 
+/**
+ * An encouraging card to motivate the user to keep using the app.
+ */
 @Composable
 fun MotivationalCard() {
     Card(
@@ -438,6 +470,9 @@ fun MotivationalCard() {
     }
 }
 
+/**
+ * Maps achievement icon IDs to their corresponding ImageVector icons.
+ */
 fun getAchievementIcon(iconId: String): ImageVector {
     return when (iconId) {
         "trophy" -> Icons.Default.EmojiEvents

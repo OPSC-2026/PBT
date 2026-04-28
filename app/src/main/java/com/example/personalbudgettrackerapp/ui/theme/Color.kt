@@ -2,27 +2,32 @@ package com.example.personalbudgettrackerapp.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Light Mode Colors
-val BackgroundLight = Color(0xFFFAFAFA) // oklch(0.98 0 0)
-val ForegroundLight = Color(0xFF252525) // oklch(0.145 0 0)
-val CardLight = Color(0xFFFFFFFF) // oklch(1 0 0)
-val PrimaryLight = Color(0xFF00A368) // oklch(0.55 0.18 145)
+/**
+ * Defines the color palette for the application in both Light and Dark modes.
+ * These colors are used to build the Material3 ColorScheme.
+ */
 
-val PrimaryLight5 = Color(0x0D00A368)
-val SecondaryLight = Color(0xFFF2F2F2) // oklch(0.96 0 0)
-val BorderLight = Color(0xFFE5E5E5) // oklch(0.91 0 0)
-val MutedForegroundLight = Color(0xFF808080) // oklch(0.5 0 0)
+// Light Mode Colors
+val BackgroundLight = Color(0xFFFAFAFA) // Neutral off-white for main backgrounds
+val ForegroundLight = Color(0xFF252525) // Dark gray for primary text
+val CardLight = Color(0xFFFFFFFF)       // Pure white for elevated surfaces
+val PrimaryLight = Color(0xFF00A368)    // Emerald green for primary branding and actions
+val PrimaryLight5 = Color(0x0D00A368)   // 5% opacity version of primary green
+val SecondaryLight = Color(0xFFF2F2F2)  // Light gray for secondary elements
+val BorderLight = Color(0xFFE5E5E5)     // Subtle gray for dividers and borders
+val MutedForegroundLight = Color(0xFF808080) // Medium gray for descriptive/secondary text
 
 // Dark Mode Colors
-val BackgroundDark = Color(0xFF1A1A1A) // oklch(0.12 0 0)
-val ForegroundDark = Color(0xFFFAFAFA) // oklch(0.98 0 0)
-val CardDark = Color(0xFF262626) // oklch(0.16 0 0)
-val PrimaryDark = Color(0xFF00B875) // oklch(0.6 0.18 145)
-val SecondaryDark = Color(0xFF383838) // oklch(0.22 0 0)
-val BorderDark = Color(0xFF424242) // oklch(0.26 0 0)
-val MutedForegroundDark = Color(0xFFA6A6A6) // oklch(0.65 0 0)
+val BackgroundDark = Color(0xFF1A1A1A)  // Deep charcoal for main backgrounds
+val ForegroundDark = Color(0xFFFAFAFA)  // Off-white for primary text
+val CardDark = Color(0xFF262626)        // Slightly lighter charcoal for elevated surfaces
+val PrimaryDark = Color(0xFF00B875)     // Vibrant green for visibility in dark mode
+val SecondaryDark = Color(0xFF383838)   // Dark gray for secondary elements
+val BorderDark = Color(0xFF424242)      // Muted gray for dividers and borders
+val MutedForegroundDark = Color(0xFFA6A6A6) // Light gray for descriptive/secondary text
 
-val Destructive = Color(0xFFE5484D) // oklch(0.55 0.22 25)
+// Global Semantic Colors
+val Destructive = Color(0xFFE5484D) // Red for errors or destructive actions
 val White = Color(0xFFFFFFFF)
 val Black = Color(0xFF000000)
-val Yellow = Color(0xFFFACC15)
+val Yellow = Color(0xFFFACC15)     // For highlights or awards

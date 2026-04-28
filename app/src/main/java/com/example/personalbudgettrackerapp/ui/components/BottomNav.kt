@@ -23,15 +23,23 @@ import androidx.compose.ui.unit.sp
 import com.example.personalbudgettrackerapp.AppScreen
 import com.example.personalbudgettrackerapp.AppViewModel
 
+/**
+ * Data class representing an item in the bottom navigation bar.
+ */
 data class NavItem(
     val icon: ImageVector,
     val label: String
 )
 
+/**
+ * A custom bottom navigation component that manages main application navigation.
+ * It highlights the active screen and provides quick access to major app features.
+ */
 @Composable
 fun BottomNav(viewModel: AppViewModel) {
     val currentScreen = viewModel.uiState.currentScreen
     
+    // Define the list of navigation items
     val navItems = listOf(
         NavItem(Icons.Default.Dashboard, "Home"),        // index 0
         NavItem(Icons.AutoMirrored.Filled.List, "Expenses"), // index 1
@@ -45,6 +53,7 @@ fun BottomNav(viewModel: AppViewModel) {
         modifier = Modifier.fillMaxWidth()
     ) {
         Column {
+            // Subtle divider at the top of the navigation bar
             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f), thickness = 1.dp)
             Row(
                 modifier = Modifier
@@ -55,6 +64,7 @@ fun BottomNav(viewModel: AppViewModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 navItems.forEachIndexed { index, item ->
+                    // Determine if the current navigation item is selected
                     val isSelected = when (index) {
                         0 -> currentScreen == AppScreen.Home
                         1 -> currentScreen == AppScreen.Expense
@@ -66,6 +76,7 @@ fun BottomNav(viewModel: AppViewModel) {
                     
                     val isEnabled = index == 0 || index == 1 || index == 2 || index == 3 || index == 4
 
+                    // Navigation button for each item
                     Column(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
@@ -74,6 +85,7 @@ fun BottomNav(viewModel: AppViewModel) {
                                 else androidx.compose.ui.graphics.Color.Transparent
                             )
                             .clickable(enabled = isEnabled) {
+                                // Navigate to the corresponding screen
                                 when(index) {
                                     0 -> viewModel.setScreen(AppScreen.Home)
                                     1 -> viewModel.setScreen(AppScreen.Expense)

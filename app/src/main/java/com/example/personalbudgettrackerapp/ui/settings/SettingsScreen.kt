@@ -30,6 +30,10 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlinx.coroutines.delay
 
+/**
+ * The Settings Screen allows users to manage their profile and financial targets.
+ * It primarily focuses on setting the total monthly budget and individual category spending limits.
+ */
 @Composable
 fun SettingsScreen(viewModel: AppViewModel) {
     val auth = FirebaseAuth.getInstance()
@@ -38,6 +42,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
     val uiState = viewModel.uiState
     val categories = uiState.categories
     
+    // Calculate the user's membership duration
     val creationDate = user?.metadata?.creationTimestamp?.let {
         val date = Date(it)
         val sdf = java.text.SimpleDateFormat("MMM yyyy", Locale.US)
@@ -47,16 +52,17 @@ fun SettingsScreen(viewModel: AppViewModel) {
     val now = LocalDate.now()
     val monthName = now.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.US))
 
-    // Load current budget if exists
+    // Retrieve the existing budget for the current month if available
     val currentBudget = remember(uiState.budgets) {
         uiState.budgets.find { it.month == now.monthValue && it.year == now.year }
     }
 
+    // Local state for budget inputs to allow editing before saving
     var totalBudget by remember { mutableStateOf("") }
     var categoryBudgetsLocal by remember { mutableStateOf(mapOf<String, String>()) }
     var saved by remember { mutableStateOf(false) }
 
-    // Initialize values when budget is loaded or categories change
+    // Synchronize local state with loaded budget data or category changes
     LaunchedEffect(currentBudget, categories) {
         if (totalBudget.isEmpty() && currentBudget != null) {
             totalBudget = if (currentBudget.totalBudget > 0) currentBudget.totalBudget.toString() else ""
@@ -72,10 +78,12 @@ fun SettingsScreen(viewModel: AppViewModel) {
         categoryBudgetsLocal = newMap
     }
 
+    // Validation logic for budget allocation
     val totalCategoryBudget = categoryBudgetsLocal.values.sumOf { it.toDoubleOrNull() ?: 0.0 }
     val totalBudgetValue = totalBudget.toDoubleOrNull() ?: 0.0
     val isOverBudget = totalCategoryBudget > totalBudgetValue && totalBudgetValue > 0
 
+    // Temporary "Saved" feedback state
     LaunchedEffect(saved) {
         if (saved) {
             delay(2000)
@@ -89,7 +97,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
             .background(MaterialTheme.colorScheme.background)
     ) {
         item {
-            // Header
+            // Header providing context for the settings area
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -120,7 +128,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
                     .fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // User Card
+                // User Profile Summary Card
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -160,7 +168,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
                     }
                 }
 
-                // Monthly Budget Card
+                // Overall Monthly Budget configuration
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -189,7 +197,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
                     }
                 }
 
-                // Category Budgets Card
+                // Individual Category Budget configuration
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -204,6 +212,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
                         
                         Spacer(modifier = Modifier.height(16.dp))
 
+                        // Render an input field for each category
                         categories.forEach { category ->
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -247,6 +256,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
+                        // Comparison of total allocated vs overall budget
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -271,7 +281,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
                     }
                 }
 
-                // Save Button
+                // Primary action to persist budget changes
                 Button(
                     onClick = { 
                         val finalLimits = categoryBudgetsLocal.mapValues { it.value.toDoubleOrNull() ?: 0.0 }
@@ -297,7 +307,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
                     }
                 }
 
-                // Quick Links Card
+                // Secondary navigation and account actions
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -329,6 +339,9 @@ fun SettingsScreen(viewModel: AppViewModel) {
     }
 }
 
+/**
+ * A reusable row item for the settings list with an icon, title, and chevron.
+ */
 @Composable
 fun SettingsItem(
     icon: ImageVector,

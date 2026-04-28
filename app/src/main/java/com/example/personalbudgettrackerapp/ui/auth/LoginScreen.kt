@@ -21,8 +21,13 @@ import androidx.compose.ui.unit.dp
 import com.example.personalbudgettrackerapp.AppScreen
 import com.example.personalbudgettrackerapp.AppViewModel
 
+/**
+ * The Login Screen allows existing users to authenticate.
+ * It features email and password inputs, error handling, and navigation to the registration screen.
+ */
 @Composable
 fun LoginScreen(viewModel: AppViewModel) {
+    // Local state for input fields
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(value = false) }
@@ -37,8 +42,6 @@ fun LoginScreen(viewModel: AppViewModel) {
     ) {
 
         item {
-
-
             // Logo and Title Section
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -72,9 +75,7 @@ fun LoginScreen(viewModel: AppViewModel) {
         }
 
         item {
-
-
-            // Card Container
+            // Card Container for the login form
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -99,7 +100,7 @@ fun LoginScreen(viewModel: AppViewModel) {
                         modifier = Modifier.padding(top = 4.dp, bottom = 24.dp)
                     )
 
-                    // Email Input
+                    // Email Input Field
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             "Email",
@@ -119,7 +120,7 @@ fun LoginScreen(viewModel: AppViewModel) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Password Input
+                    // Password Input Field with visibility toggle
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             "Password",
@@ -147,7 +148,7 @@ fun LoginScreen(viewModel: AppViewModel) {
                         )
                     }
 
-                    // Error Display
+                    // Display error message if authentication fails
                     viewModel.uiState.error?.let {
                         Text(
                             text = it,
@@ -160,7 +161,7 @@ fun LoginScreen(viewModel: AppViewModel) {
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Sign In Button
+                    // Sign In Button with loading state handling
                     Button(
                         onClick = { viewModel.login(email, password) },
                         enabled = !viewModel.uiState.isLoading,
@@ -185,7 +186,7 @@ fun LoginScreen(viewModel: AppViewModel) {
             Spacer(modifier = Modifier.height(24.dp))
         }
         item {
-            // Registration Link
+            // Navigation link to the Registration Screen
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {

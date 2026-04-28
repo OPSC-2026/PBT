@@ -33,10 +33,13 @@ import com.example.personalbudgettrackerapp.data.getCategoryIcon
 import java.util.UUID
 
 /**
- * Icon Options for categories.
+ * Data class representing an icon selection option in the category editor.
  */
 data class IconOption(val id: String, val emoji: String, val label: String)
 
+/**
+ * Predefined list of icon options for categories.
+ */
 val ICON_OPTIONS = listOf(
     IconOption("shopping-cart", "🛒", "Shopping"),
     IconOption("car", "🚗", "Transport"),
@@ -48,6 +51,9 @@ val ICON_OPTIONS = listOf(
     IconOption("briefcase", "💼", "Work"),
 )
 
+/**
+ * Predefined list of color options for categories.
+ */
 val COLOR_OPTIONS = listOf(
     Color(0xFF22C55E), Color(0xFF3B82F6), Color(0xFFA855F7), Color(0xFFF59E0B),
     Color(0xFFEF4444), Color(0xFFEC4899), Color(0xFF06B6D4), Color(0xFF84CC16),
@@ -55,6 +61,7 @@ val COLOR_OPTIONS = listOf(
 
 /**
  * The Category Screen allows users to manage their spending categories.
+ * Users can view, add, edit, or delete categories.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,6 +69,7 @@ fun CategoryScreen(viewModel: AppViewModel) {
     val uiState = viewModel.uiState
     val categories = uiState.categories
 
+    // State for managing the edit/add category dialog
     var showDialog by remember { mutableStateOf(false) }
     var editingCategory by remember { mutableStateOf<Category?>(null) }
 
@@ -72,6 +80,7 @@ fun CategoryScreen(viewModel: AppViewModel) {
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surface)
                     .drawBehind {
+                        // Draw a thin separator line at the bottom of the top bar
                         val strokeWidth = 1.dp.toPx()
                         val y = size.height - strokeWidth / 2
                         drawLine(
@@ -97,6 +106,7 @@ fun CategoryScreen(viewModel: AppViewModel) {
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f)
                     )
+                    // Button to open the dialog for adding a new category
                     Button(
                         onClick = {
                             editingCategory = null
@@ -120,6 +130,7 @@ fun CategoryScreen(viewModel: AppViewModel) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Display each category in a list
             items(categories) { category ->
                 CategoryItem(
                     category = category,
@@ -131,6 +142,7 @@ fun CategoryScreen(viewModel: AppViewModel) {
                 )
             }
 
+            // A prominent button at the end of the list to add a new category
             item {
                 AddButton(onClick = {
                     editingCategory = null
@@ -138,10 +150,12 @@ fun CategoryScreen(viewModel: AppViewModel) {
                 })
             }
 
+            // Bottom spacer to ensure content isn't hidden by navigation or floating elements
             item { Spacer(Modifier.height(80.dp)) }
         }
     }
 
+    // Category editor dialog
     if (showDialog) {
         CategoryEditDialog(
             category = editingCategory,
@@ -158,6 +172,9 @@ fun CategoryScreen(viewModel: AppViewModel) {
     }
 }
 
+/**
+ * A single category item in the list showing its icon, name, and actions.
+ */
 @Composable
 fun CategoryItem(category: Category, onEdit: () -> Unit, onDelete: () -> Unit) {
     Card(
@@ -169,6 +186,7 @@ fun CategoryItem(category: Category, onEdit: () -> Unit, onDelete: () -> Unit) {
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Icon container with tinted background
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -194,6 +212,7 @@ fun CategoryItem(category: Category, onEdit: () -> Unit, onDelete: () -> Unit) {
                 Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(20.dp))
             }
 
+            // Only allow deletion for custom categories
             if (!category.isDefault) {
                 IconButton(onClick = onDelete) {
                     Icon(Icons.Default.Delete, contentDescription = "Delete", modifier = Modifier.size(20.dp))
@@ -203,6 +222,9 @@ fun CategoryItem(category: Category, onEdit: () -> Unit, onDelete: () -> Unit) {
     }
 }
 
+/**
+ * A large, clickable box used to trigger the "Add New Category" action.
+ */
 @Composable
 fun AddButton(onClick: () -> Unit) {
     Box(
@@ -221,6 +243,10 @@ fun AddButton(onClick: () -> Unit) {
     }
 }
 
+/**
+ * A dialog for creating or editing a category.
+ * Provides inputs for name, icon selection, and color selection.
+ */
 @Composable
 fun CategoryEditDialog(
     category: Category?,
@@ -248,7 +274,7 @@ fun CategoryEditDialog(
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 item {
-                    // Header with Centered Text and Close Button
+                    // Header section
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Column(
                             modifier = Modifier.fillMaxWidth(),
@@ -283,6 +309,7 @@ fun CategoryEditDialog(
                     }
                 }
 
+                // Category Name Input
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
@@ -306,6 +333,7 @@ fun CategoryEditDialog(
                     }
                 }
 
+                // Icon Selection Grid
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
@@ -349,6 +377,7 @@ fun CategoryEditDialog(
                     }
                 }
 
+                // Color Selection Row
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
@@ -381,8 +410,8 @@ fun CategoryEditDialog(
                     }
                 }
 
+                // Preview section to see how the category will look
                 item {
-                    // Preview Section
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -417,6 +446,7 @@ fun CategoryEditDialog(
                     }
                 }
 
+                // Display validation error if any
                 if (error.isNotEmpty()) {
                     item {
                         Text(
@@ -429,6 +459,7 @@ fun CategoryEditDialog(
                     }
                 }
 
+                // Action buttons: Cancel and Save/Create
                 item {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),

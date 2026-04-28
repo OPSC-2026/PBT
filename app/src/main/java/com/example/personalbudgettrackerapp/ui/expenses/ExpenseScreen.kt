@@ -33,18 +33,24 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
 
+/**
+ * The Expense Screen displays a comprehensive list of all recorded expenses.
+ * It features searching, filtering by date range, and detailed viewing/deletion of individual expenses.
+ */
 @Composable
 fun ExpenseScreen(viewModel: AppViewModel) {
     val uiState = viewModel.uiState
     val expenses = uiState.expenses
     val categories = uiState.categories
 
+    // State for searching and filtering
     var searchQuery by remember { mutableStateOf("") }
     var dateFrom by remember { mutableStateOf<LocalDate?>(null) }
     var dateTo by remember { mutableStateOf<LocalDate?>(null) }
     var showFilters by remember { mutableStateOf(false) }
     var selectedExpenseId by remember { mutableStateOf<String?>(null) }
 
+    // Apply search and date filters to the expense list
     val filteredExpenses = remember(expenses, categories, searchQuery, dateFrom, dateTo) {
         expenses.filter { expense ->
             val matchesSearch = if (searchQuery.isNotBlank()) {
@@ -60,6 +66,7 @@ fun ExpenseScreen(viewModel: AppViewModel) {
         }.sortedByDescending { it.date }
     }
 
+    // Group expenses by date for categorical display in the list
     val groupedExpenses = remember(filteredExpenses) {
         filteredExpenses.groupBy { it.date }
     }
@@ -69,6 +76,7 @@ fun ExpenseScreen(viewModel: AppViewModel) {
 
     Scaffold(
         topBar = {
+            // Header component containing search and filter controls
             Header(
                 searchQuery = searchQuery,
                 onSearchChange = { searchQuery = it },
@@ -87,6 +95,7 @@ fun ExpenseScreen(viewModel: AppViewModel) {
             )
         },
         floatingActionButton = {
+            // Floating Action Button to navigate to the Add Expense screen
             FloatingActionButton(
                 onClick = { viewModel.setScreen(AppScreen.AddExpense) },
                 containerColor = MaterialTheme.colorScheme.primary,
@@ -102,7 +111,7 @@ fun ExpenseScreen(viewModel: AppViewModel) {
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Summary
+            // Summary row showing total count and amount for the current view
             if (filteredExpenses.isNotEmpty()) {
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 1f),
@@ -130,7 +139,7 @@ fun ExpenseScreen(viewModel: AppViewModel) {
                 }
             }
 
-            // Expense List
+            // List of expenses grouped by date
             if (groupedExpenses.isEmpty()) {
                 EmptyState(hasFilters) { viewModel.setScreen(AppScreen.AddExpense) }
             } else {
@@ -142,6 +151,7 @@ fun ExpenseScreen(viewModel: AppViewModel) {
                     groupedExpenses.forEach { (date, dayExpenses) ->
                         item(key = date) {
                             val formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy", Locale.Builder().setLanguage("en").setRegion("ZA").build())
+                            // Date header for the group
                             Text(
                                 text = date.format(formatter).uppercase(),
                                 style = MaterialTheme.typography.labelSmall,
@@ -158,11 +168,13 @@ fun ExpenseScreen(viewModel: AppViewModel) {
                             ) {
                                 Column {
                                     dayExpenses.forEachIndexed { index, expense ->
+                                        // Individual expense entry
                                         ExpenseItem(
                                             expense = expense,
                                             category = categories.find { it.id == expense.categoryId },
                                             onClick = { selectedExpenseId = expense.id }
                                         )
+                                        // Divider between items in the same date group
                                         if (index < dayExpenses.size - 1) {
                                             HorizontalDivider(
                                                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -180,7 +192,7 @@ fun ExpenseScreen(viewModel: AppViewModel) {
         }
     }
 
-    // Detail Dialog
+    // Dialog showing detailed information about a selected expense
     selectedExpenseId?.let { id ->
         val expense = expenses.find { it.id == id }
         val category = categories.find { it.id == expense?.categoryId }
@@ -198,6 +210,9 @@ fun ExpenseScreen(viewModel: AppViewModel) {
     }
 }
 
+/**
+ * Top bar component for the Expense Screen, housing search and expandable filter options.
+ */
 @Composable
 fun Header(
     searchQuery: String,
@@ -230,6 +245,7 @@ fun Header(
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
+                // Filter toggle button
                 if(showFilters){
                     Button(
                         onClick = onToggleFilters,
@@ -257,7 +273,7 @@ fun Header(
 
             Spacer(Modifier.height(16.dp))
 
-            // Search
+            // Search input field
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = onSearchChange,
@@ -272,7 +288,7 @@ fun Header(
                 )
             )
 
-            // Filters Panel
+            // Expandable filters panel
             AnimatedVisibility(
                 visible = showFilters,
                 enter = expandVertically(),
@@ -291,6 +307,7 @@ fun Header(
                         Text("Date Range", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                     }
 
+                    // Date range pickers
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Box(modifier = Modifier.weight(1f)) {
                             CustomDatePicker(
@@ -308,6 +325,7 @@ fun Header(
                         }
                     }
 
+                    // Clear filters button
                     if (hasFilters) {
                         TextButton(
                             onClick = onClearFilters,
@@ -325,6 +343,9 @@ fun Header(
     }
 }
 
+/**
+ * A single row representing an expense in the list.
+ */
 @Composable
 fun ExpenseItem(expense: Expense, category: Category?, onClick: () -> Unit) {
     Surface(
@@ -338,6 +359,7 @@ fun ExpenseItem(expense: Expense, category: Category?, onClick: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                // Category icon with tinted background
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -352,6 +374,7 @@ fun ExpenseItem(expense: Expense, category: Category?, onClick: () -> Unit) {
                     Text(category?.name ?: "No Category", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
+            // Expense amount shown in red
             Text(
                 text = "-R${String.format(Locale.US, "%.2f", expense.amount)}",
                 style = MaterialTheme.typography.bodyMedium,
@@ -362,6 +385,9 @@ fun ExpenseItem(expense: Expense, category: Category?, onClick: () -> Unit) {
     }
 }
 
+/**
+ * UI state shown when no expenses match the current filters.
+ */
 @Composable
 fun EmptyState(hasFilters: Boolean, onAddExpense: () -> Unit) {
     Column(
@@ -402,6 +428,9 @@ fun EmptyState(hasFilters: Boolean, onAddExpense: () -> Unit) {
     }
 }
 
+/**
+ * Detailed view of a single expense shown in a dialog.
+ */
 @Composable
 fun ExpenseDetailDialog(expense: Expense, category: Category?, onDismiss: () -> Unit, onDelete: () -> Unit) {
     Dialog(onDismissRequest = onDismiss) {
@@ -448,6 +477,7 @@ fun ExpenseDetailDialog(expense: Expense, category: Category?, onDismiss: () -> 
 
                 HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
 
+                // Action button to delete the expense
                 Button(
                     onClick = onDelete,
                     modifier = Modifier.fillMaxWidth().height(48.dp),

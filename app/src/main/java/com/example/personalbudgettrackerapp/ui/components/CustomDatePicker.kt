@@ -17,6 +17,10 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+/**
+ * A custom date picker component that combines a read-only text field with a Material3 DatePickerDialog.
+ * It provides a user-friendly way to select dates while maintaining a consistent UI style.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomDatePicker(
@@ -26,12 +30,15 @@ fun CustomDatePicker(
     modifier: Modifier = Modifier
 ) {
     val dateFormatter = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd") }
+    // State to control the visibility of the DatePicker dialog
     var showDatePicker by remember { mutableStateOf(false) }
     
+    // State to maintain the date picker's internal selection state
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = value.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
     )
 
+    // Show the DatePicker dialog when triggered
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -59,12 +66,14 @@ fun CustomDatePicker(
     }
 
     Column(modifier = modifier) {
+        // Label for the date picker
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(bottom = 4.dp)
         )
+        // Read-only text field that displays the selected date and opens the dialog when clicked
         OutlinedTextField(
             value = value.format(dateFormatter),
             onValueChange = { },

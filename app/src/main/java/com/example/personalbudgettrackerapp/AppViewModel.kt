@@ -16,6 +16,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 
+/**
+ * Represents the different screens available in the application for navigation.
+ */
 sealed interface AppScreen {
     data object Login : AppScreen
     data object Register : AppScreen
@@ -28,17 +31,26 @@ sealed interface AppScreen {
     data object Expense : AppScreen
 }
 
+/**
+ * Data class to represent spending details for a specific category.
+ */
 data class CategorySpending(
     val category: Category,
     val spent: Double,
     val budget: Double
 )
 
+/**
+ * Data class representing a single point on a chart.
+ */
 data class ChartPoint(
     val day: Int,
     val amount: Double
 )
 
+/**
+ * Encapsulates the entire UI state for the application.
+ */
 data class AppUiState(
     val currentScreen: AppScreen = AppScreen.Login,
     val isLoading: Boolean = false,
@@ -49,10 +61,15 @@ data class AppUiState(
     val achievements: List<Achievement> = emptyList()
 )
 
+/**
+ * The central ViewModel for the application, managing state and data synchronization with Firebase.
+ * It handles authentication, expense tracking, budget management, and achievement processing.
+ */
 class AppViewModel : ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 
+    // Predefined achievements available in the app
     private val defaultAchievements = listOf(
         Achievement("1", "Budget Master", "Stay within budget for a month", "trophy", false, null, 0f, "budget_master"),
         Achievement("2", "Expense Tracker", "Log expenses 7 days in a row", "calendar-check", false, null, 0f, "expense_tracker"),
@@ -61,6 +78,7 @@ class AppViewModel : ViewModel() {
         Achievement("5", "Category Creator", "Create a custom category", "folder-plus", false, null, 0f, "category_creator")
     )
 
+    // Publicly exposed UI state using Compose state for reactivity
     var uiState by mutableStateOf(
         AppUiState(
             currentScreen = if (auth.currentUser != null) AppScreen.Home else AppScreen.Login,
@@ -70,11 +88,15 @@ class AppViewModel : ViewModel() {
         private set
 
     init {
+        // If a user is already logged in, start observing data immediately
         if (auth.currentUser != null) {
             observeData()
         }
     }
 
+    /**
+     * Sets up listeners for all relevant data collections in Firestore.
+     */
     private fun observeData() {
         observeCategories()
         observeExpenses()
@@ -82,6 +104,9 @@ class AppViewModel : ViewModel() {
         observeAchievements()
     }
 
+    /**
+     * Listens for changes in the user's categories.
+     */
     private fun observeCategories() {
         val userId = auth.currentUser?.uid ?: return
         db.collection("users").document(userId).collection("categories")
@@ -105,6 +130,9 @@ class AppViewModel : ViewModel() {
             }
     }
 
+    /**
+     * Listens for changes in the user's expense logs.
+     */
     private fun observeExpenses() {
         val userId = auth.currentUser?.uid ?: return
         db.collection("users").document(userId).collection("expenses")
@@ -128,6 +156,9 @@ class AppViewModel : ViewModel() {
             }
     }
 
+    /**
+     * Listens for changes in the user's budget configurations.
+     */
     private fun observeBudgets() {
         val userId = auth.currentUser?.uid ?: return
         db.collection("users").document(userId).collection("budgets")
@@ -155,6 +186,9 @@ class AppViewModel : ViewModel() {
             }
     }
 
+    /**
+     * Listens for changes in the user's unlocked achievements.
+     */
     private fun observeAchievements() {
         val userId = auth.currentUser?.uid ?: return
         db.collection("users").document(userId).collection("achievements")
@@ -179,6 +213,9 @@ class AppViewModel : ViewModel() {
             }
     }
 
+    /**
+     * Evaluates the current state of expenses, categories, and budgets to update achievement progress.
+     */
     private fun checkAchievements() {
         val expenses = uiState.expenses
         val categories = uiState.categories
@@ -217,6 +254,7 @@ class AppViewModel : ViewModel() {
                     }
                 }
                 "expense_tracker" -> {
+                    // Check for consecutive days of logging expenses
                     val dates = expenses.map { it.date }.distinct().sortedDescending()
                     var consecutive = 0
                     if (dates.isNotEmpty()) {
@@ -252,6 +290,9 @@ class AppViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Persists an unlocked achievement to Firestore.
+     */
     private fun unlockAchievement(id: String) {
         val userId = auth.currentUser?.uid ?: return
         val data = hashMapOf(
@@ -262,10 +303,16 @@ class AppViewModel : ViewModel() {
             .set(data, com.google.firebase.firestore.SetOptions.merge())
     }
 
+    /**
+     * Changes the current active screen.
+     */
     fun setScreen(screen: AppScreen) {
         uiState = uiState.copy(currentScreen = screen, error = null)
     }
 
+    /**
+     * Handles user login with Firebase Authentication.
+     */
     fun login(email: String, password: String) {
         if (email.isBlank() || password.isBlank()) {
             uiState = uiState.copy(error = "Please fill in all fields")
@@ -283,6 +330,9 @@ class AppViewModel : ViewModel() {
             }
     }
 
+    /**
+     * Handles user registration and profile initialization.
+     */
     fun register(name: String, email: String, password: String, confirm: String) {
         if (name.isBlank() || email.isBlank() || password.isBlank() || confirm.isBlank()) {
             uiState = uiState.copy(error = "Please fill in all fields")
@@ -312,11 +362,17 @@ class AppViewModel : ViewModel() {
             }
     }
 
+    /**
+     * Logs the user out and clears the current UI state.
+     */
     fun logout() {
         auth.signOut()
         uiState = uiState.copy(currentScreen = AppScreen.Login, expenses = emptyList(), categories = emptyList(), budgets = emptyList())
     }
 
+    /**
+     * Adds a new expense entry for the authenticated user.
+     */
     fun addExpense(amount: Double, date: LocalDate, categoryId: String, description: String, onSuccess: () -> Unit) {
         val userId = auth.currentUser?.uid ?: return
         uiState = uiState.copy(isLoading = true, error = null)
@@ -338,6 +394,9 @@ class AppViewModel : ViewModel() {
             }
     }
 
+    /**
+     * Deletes a specific expense entry.
+     */
     fun deleteExpense(expenseId: String) {
         val userId = auth.currentUser?.uid ?: return
         db.collection("users").document(userId).collection("expenses").document(expenseId)
@@ -347,6 +406,9 @@ class AppViewModel : ViewModel() {
             }
     }
 
+    /**
+     * Updates or creates a budget configuration for a specific month and year.
+     */
     fun updateBudget(month: Int, year: Int, total: Double, categoryLimits: Map<String, Double>) {
         val userId = auth.currentUser?.uid ?: return
         val budgetId = "${year}_${String.format("%02d", month)}"
@@ -363,6 +425,9 @@ class AppViewModel : ViewModel() {
             }
     }
 
+    /**
+     * Deletes a custom category created by the user.
+     */
     fun deleteCategory(categoryId: String, onSuccess: () -> Unit = {}) {
         val userId = auth.currentUser?.uid ?: return
         uiState = uiState.copy(isLoading = true, error = null)
@@ -377,6 +442,9 @@ class AppViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Updates an existing category's details.
+     */
     fun updateCategory(category: Category, onSuccess: () -> Unit = {}) {
         val userId = auth.currentUser?.uid ?: return
         uiState = uiState.copy(isLoading = true, error = null)
@@ -397,6 +465,9 @@ class AppViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Adds a new custom category for the user.
+     */
     fun addCategory(category: Category, onSuccess: () -> Unit = {}) {
         val userId = auth.currentUser?.uid ?: return
         uiState = uiState.copy(isLoading = true, error = null)

@@ -39,10 +39,14 @@ import com.example.personalbudgettrackerapp.data.getCategoryIcon
 import com.example.personalbudgettrackerapp.ui.components.CustomDatePicker
 import java.time.LocalDate
 
+/**
+ * The Add Expense screen provides a form to record new spending.
+ * It includes an amount input, category selection, date picker, and description field.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddExpense(viewModel: AppViewModel) {
-
+    // Local state for the expense form
     var amount by remember { mutableStateOf("") }
     var date by remember { mutableStateOf(LocalDate.now()) }
     var categoryId by remember { mutableStateOf("") }
@@ -50,6 +54,7 @@ fun AddExpense(viewModel: AppViewModel) {
     var error by remember { mutableStateOf("") }
     var success by remember { mutableStateOf(false) }
 
+    // Display success animation and message upon successful addition
     if (success) {
         Box(
             modifier = Modifier
@@ -89,6 +94,7 @@ fun AddExpense(viewModel: AppViewModel) {
             }
         }
 
+        // Delay and then navigate back to the Home Screen
         LaunchedEffect(Unit) {
             kotlinx.coroutines.delay(1500)
             viewModel.setScreen(AppScreen.Home)
@@ -144,7 +150,7 @@ fun AddExpense(viewModel: AppViewModel) {
 
         ) {
             item {
-                // Amount Input Card
+                // Large amount input area with currency symbol
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -208,7 +214,7 @@ fun AddExpense(viewModel: AppViewModel) {
 
 
             item {
-                // Category Selection
+                // Category grid for easy selection
                 Column {
                     Text(
                         text = "Category",
@@ -235,14 +241,14 @@ fun AddExpense(viewModel: AppViewModel) {
 
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    // Date Field
+                    // Date input utilizing the custom date picker
                     CustomDatePicker(
                         value = date,
                         onValueChange = { date = it },
                         label = "Date"
                     )
 
-                    // Description Field
+                    // Text input for expense description
                     Column {
                         Text(
                             text = "Description",
@@ -266,7 +272,7 @@ fun AddExpense(viewModel: AppViewModel) {
             }
 
             item {
-                // Receipt Button
+                // Optional action button for receipts
                 OutlinedButton(
                     onClick = { /* Optional functionality */ },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -284,8 +290,7 @@ fun AddExpense(viewModel: AppViewModel) {
                 }
             }
             item {
-
-
+                // Display localized or ViewModel-level errors
                 val combinedError = error.ifEmpty { viewModel.uiState.error ?: "" }
                 if (combinedError.isNotEmpty()) {
                     Text(
@@ -299,11 +304,12 @@ fun AddExpense(viewModel: AppViewModel) {
             }
 
             item {
-                // Save Button
+                // Main action button to save the expense
                 Button(
                     onClick = {
                         error = ""
                         val amountVal = amount.toDoubleOrNull()
+                        // Input validation
                         if (amountVal == null || amountVal <= 0) {
                             error = "Please enter a valid amount"
                         } else if (categoryId.isEmpty()) {
@@ -339,6 +345,9 @@ fun AddExpense(viewModel: AppViewModel) {
     }
 }
 
+/**
+ * A selectable category card for the Add Expense form.
+ */
 @Composable
 fun CardCategory(
     category: Category,

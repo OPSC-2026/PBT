@@ -23,8 +23,13 @@ import androidx.compose.ui.unit.dp
 import com.example.personalbudgettrackerapp.AppScreen
 import com.example.personalbudgettrackerapp.AppViewModel
 
+/**
+ * The Register Screen allows new users to create an account.
+ * It includes fields for name, email, and password confirmation, with validation and navigation logic.
+ */
 @Composable
 fun RegisterScreen(viewModel: AppViewModel) {
+    // Local state for all registration input fields
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -40,7 +45,7 @@ fun RegisterScreen(viewModel: AppViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
-            // Back Button
+            // Back navigation to Login Screen
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Start
@@ -66,8 +71,7 @@ fun RegisterScreen(viewModel: AppViewModel) {
         }
 
         item {
-
-            // Logo and Title Section
+            // Branding Section
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(bottom = 32.dp)
@@ -103,8 +107,7 @@ fun RegisterScreen(viewModel: AppViewModel) {
         }
 
         item {
-
-            // Card Container
+            // Registration Form Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -130,7 +133,7 @@ fun RegisterScreen(viewModel: AppViewModel) {
                         modifier = Modifier.padding(top = 4.dp, bottom = 24.dp)
                     )
 
-                    // Name Input
+                    // Name Input Field
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             "Name",
@@ -150,7 +153,7 @@ fun RegisterScreen(viewModel: AppViewModel) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Email Input
+                    // Email Input Field
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             "Email",
@@ -170,7 +173,7 @@ fun RegisterScreen(viewModel: AppViewModel) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Password Input
+                    // Password Input Field with visibility toggle
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             "Password",
@@ -200,7 +203,7 @@ fun RegisterScreen(viewModel: AppViewModel) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Confirm Password Input
+                    // Confirm Password Input Field with visibility toggle
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             "Confirm Password",
@@ -230,7 +233,7 @@ fun RegisterScreen(viewModel: AppViewModel) {
                         )
                     }
 
-                    // Error Display
+                    // Display error message if registration fails or passwords don't match
                     viewModel.uiState.error?.let {
                         Text(
                             text = it,
@@ -243,7 +246,7 @@ fun RegisterScreen(viewModel: AppViewModel) {
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Create Account Button
+                    // Register Button with loading state handling
                     Button(
                         onClick = { viewModel.register(name, email, password, confirmPassword) },
                         enabled = !viewModel.uiState.isLoading,
@@ -268,27 +271,26 @@ fun RegisterScreen(viewModel: AppViewModel) {
         }
 
         item {
-        // Footer
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                "Already have an account? ",
-                color = MaterialTheme.colorScheme.onSecondary,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            TextButton(
-                onClick = { viewModel.setScreen(AppScreen.Login) },
-                contentPadding = PaddingValues(0.dp)
+            // Footer with navigation back to Login Screen
+            Row(
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "Sign in",
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    "Already have an account? ",
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    style = MaterialTheme.typography.bodyMedium
                 )
+                TextButton(
+                    onClick = { viewModel.setScreen(AppScreen.Login) },
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Text(
+                        "Sign in",
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         }
-    }
-
     }
 }

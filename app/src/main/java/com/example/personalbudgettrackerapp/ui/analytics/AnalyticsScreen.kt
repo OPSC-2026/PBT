@@ -31,6 +31,10 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 
+/**
+ * The Analytics Screen provides data visualization and financial insights.
+ * It displays spending trends, category breakdowns, and budget comparisons.
+ */
 @Composable
 fun AnalyticsScreen(viewModel: AppViewModel) {
     val uiState = viewModel.uiState
@@ -39,12 +43,15 @@ fun AnalyticsScreen(viewModel: AppViewModel) {
     val categories = uiState.categories
     val budgets = uiState.budgets
 
+    // State for the selected time range (Week, Month, Year)
     var timeRange by remember { mutableStateOf(TimeRange.MONTH) }
 
+    // Find the budget for the current month
     val currentBudget = remember(budgets, now) {
         budgets.find { it.month == now.monthValue && it.year == now.year }
     }
 
+    // Filter expenses based on the selected time range
     val filteredExpenses = remember(expenses, timeRange) {
         val startDate = when (timeRange) {
             TimeRange.WEEK -> now.minusDays(7)
@@ -54,6 +61,7 @@ fun AnalyticsScreen(viewModel: AppViewModel) {
         expenses.filter { it.date >= startDate }
     }
 
+    // Calculate summary statistics
     val totalSpent = filteredExpenses.sumOf { it.amount }
     val avgPerDay = totalSpent / when (timeRange) {
         TimeRange.WEEK -> 7
@@ -61,6 +69,7 @@ fun AnalyticsScreen(viewModel: AppViewModel) {
         TimeRange.YEAR -> 365
     }
 
+    // Calculate week-over-week comparison
     val weekComparison = remember(expenses) {
         val thisWeekStart = now.minusDays(7)
         val lastWeekStart = now.minusDays(14)
@@ -86,6 +95,7 @@ fun AnalyticsScreen(viewModel: AppViewModel) {
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.height(16.dp))
+                // Component to select time range
                 TimeRangeSelector(selected = timeRange, onSelected = { timeRange = it })
             }
         }
@@ -96,6 +106,7 @@ fun AnalyticsScreen(viewModel: AppViewModel) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Summary statistics cards
             item {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     SummaryCard(
@@ -115,24 +126,28 @@ fun AnalyticsScreen(viewModel: AppViewModel) {
                 }
             }
 
+            // Spending trend line chart
             item {
                 AnalyticsCard(title = "Spending Trend") {
                     SpendingTrendChart(filteredExpenses)
                 }
             }
 
+            // Category breakdown donut chart
             item {
                 AnalyticsCard(title = "Category Breakdown") {
                     CategoryBreakdownChart(filteredExpenses, categories)
                 }
             }
 
+            // Budget vs Actual progress bars
             item {
                 AnalyticsCard(title = "Budget vs Actual") {
                     BudgetVsActualChart(filteredExpenses, categories, currentBudget)
                 }
             }
 
+            // List of top expenses
             item {
                 AnalyticsCard(title = "Top Expenses") {
                     TopExpensesList(filteredExpenses, categories)
@@ -142,6 +157,9 @@ fun AnalyticsScreen(viewModel: AppViewModel) {
     }
 }
 
+/**
+ * A selector component for switching between different time ranges.
+ */
 @Composable
 fun TimeRangeSelector(selected: TimeRange, onSelected: (TimeRange) -> Unit) {
     Row(
@@ -172,6 +190,9 @@ fun TimeRangeSelector(selected: TimeRange, onSelected: (TimeRange) -> Unit) {
     }
 }
 
+/**
+ * A card displaying a summary metric with an optional trend indicator.
+ */
 @Composable
 fun SummaryCard(
     modifier: Modifier = Modifier,
@@ -210,6 +231,9 @@ fun SummaryCard(
     }
 }
 
+/**
+ * A reusable wrapper for analytics charts and lists.
+ */
 @Composable
 fun AnalyticsCard(title: String, content: @Composable () -> Unit) {
     Card(
@@ -225,6 +249,9 @@ fun AnalyticsCard(title: String, content: @Composable () -> Unit) {
     }
 }
 
+/**
+ * Renders a line chart showing daily spending trends.
+ */
 @Composable
 fun SpendingTrendChart(expenses: List<Expense>) {
     val dailyData = remember(expenses) {
@@ -264,6 +291,7 @@ fun SpendingTrendChart(expenses: List<Expense>) {
             close()
         }
 
+        // Draw background gradient under the line
         drawPath(
             path = fillPath,
             brush = Brush.verticalGradient(
@@ -271,6 +299,7 @@ fun SpendingTrendChart(expenses: List<Expense>) {
             )
         )
 
+        // Draw the trend line
         drawPath(
             path = path,
             color = Color(0xFF4CAF50),
@@ -279,6 +308,9 @@ fun SpendingTrendChart(expenses: List<Expense>) {
     }
 }
 
+/**
+ * Renders a donut chart and legend for spending across categories.
+ */
 @Composable
 fun CategoryBreakdownChart(expenses: List<Expense>, categories: List<Category>) {
     val spendingByCategory = remember(expenses) {
@@ -290,6 +322,7 @@ fun CategoryBreakdownChart(expenses: List<Expense>, categories: List<Category>) 
     }.filter { it.second > 0 }.sortedByDescending { it.second }
 
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        // Donut chart
         Canvas(modifier = Modifier.size(100.dp)) {
             var startAngle = -90f
             val total = chartData.sumOf { it.second }.toFloat()
@@ -308,6 +341,7 @@ fun CategoryBreakdownChart(expenses: List<Expense>, categories: List<Category>) 
 
         Spacer(modifier = Modifier.width(24.dp))
 
+        // Legend for the top 4 categories
         Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.weight(1f)) {
             chartData.take(4).forEach { data ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -321,6 +355,9 @@ fun CategoryBreakdownChart(expenses: List<Expense>, categories: List<Category>) 
     }
 }
 
+/**
+ * Displays progress bars comparing actual spending vs planned budget for each category.
+ */
 @Composable
 fun BudgetVsActualChart(expenses: List<Expense>, categories: List<Category>, budget: Budget?) {
     val spendingByCategory = expenses.groupBy { it.categoryId }.mapValues { it.value.sumOf { e -> e.amount } }
@@ -335,7 +372,9 @@ fun BudgetVsActualChart(expenses: List<Expense>, categories: List<Category>, bud
                 Text(text = category.name, style = MaterialTheme.typography.labelSmall)
                 Spacer(modifier = Modifier.height(4.dp))
                 Box(modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) {
+                    // Budget line (gray)
                     Box(modifier = Modifier.fillMaxWidth((planned / max).toFloat()).fillMaxHeight().background(Color.LightGray))
+                    // Actual spending (category color)
                     Box(modifier = Modifier.fillMaxWidth((spent / max).toFloat()).fillMaxHeight().background(category.color))
                 }
             }
@@ -343,6 +382,9 @@ fun BudgetVsActualChart(expenses: List<Expense>, categories: List<Category>, bud
     }
 }
 
+/**
+ * Lists the highest individual expenses in the filtered time range.
+ */
 @Composable
 fun TopExpensesList(expenses: List<Expense>, categories: List<Category>) {
     val topExpenses = expenses.sortedByDescending { it.amount }.take(5)
@@ -376,6 +418,9 @@ fun TopExpensesList(expenses: List<Expense>, categories: List<Category>) {
     }
 }
 
+/**
+ * Maps icon names to their corresponding emoji representation.
+ */
 fun getCategoryIcon(iconName: String): String {
     return when (iconName) {
         "shopping-cart" -> "🛒"

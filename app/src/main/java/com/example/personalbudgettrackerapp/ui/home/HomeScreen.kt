@@ -39,20 +39,27 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.math.abs
 
+/**
+ * The Home Screen serves as the dashboard for the application.
+ * It provides an overview of the current budget, spending trends, category breakdowns, and recent expenses.
+ */
 @Composable
 fun HomeScreen(viewModel: AppViewModel) {
     val auth = FirebaseAuth.getInstance()
     val uiState = viewModel.uiState
     val now = LocalDate.now()
     
+    // Determine the current month's budget
     val currentBudget = remember(uiState.budgets, now) {
         uiState.budgets.find { (it.month == now.monthValue) && (it.year == now.year) }
     }
     
+    // Filter expenses to only include those from the current month
     val monthlyExpenses = remember(uiState.expenses, now) {
         uiState.expenses.filter { (it.date.monthValue == now.monthValue) && (it.date.year == now.year) }
     }
     
+    // Calculate financial summaries
     val totalSpent = remember(monthlyExpenses) {
         monthlyExpenses.sumOf { it.amount }
     }
@@ -62,6 +69,7 @@ fun HomeScreen(viewModel: AppViewModel) {
     val percentUsed = if (totalBudget > 0) (totalSpent / totalBudget).toFloat() else 0f
     val isOverBudget = remaining < 0
 
+    // Formatter for currency display localized to South Africa
     val currencyFormatter = remember { 
         NumberFormat.getCurrencyInstance(Locale.Builder().setLanguage("en").setRegion("ZA").build()) 
     }
@@ -71,7 +79,7 @@ fun HomeScreen(viewModel: AppViewModel) {
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            // Header Section
+            // Top section with user welcome and main budget overview
             item {
                 HeaderSection(
                     username = auth.currentUser?.displayName ?: "User",
@@ -85,7 +93,7 @@ fun HomeScreen(viewModel: AppViewModel) {
                 )
             }
 
-            // Quick Stats Section
+            // Cards for quick statistical highlights
             item {
                 Row(
                     modifier = Modifier.padding(horizontal = 16.dp),
@@ -108,7 +116,7 @@ fun HomeScreen(viewModel: AppViewModel) {
                 }
             }
 
-            // Spending Trend Section
+            // Spending trend visualization (line chart)
             item {
                 val chartData = remember(monthlyExpenses, now) {
                     val days = monthlyExpenses.groupBy { it.date.dayOfMonth }
@@ -123,7 +131,7 @@ fun HomeScreen(viewModel: AppViewModel) {
                 )
             }
 
-            // Category Spending Section
+            // Spending breakdown by category with progress indicators
             item {
                 val categorySpending = remember(monthlyExpenses, uiState.categories, currentBudget) {
                     val spendingMap = monthlyExpenses.groupBy { it.categoryId }
@@ -143,7 +151,7 @@ fun HomeScreen(viewModel: AppViewModel) {
                 )
             }
 
-            // Recent Expenses Section
+            // A list of the most recent expense transactions
             item {
                 RecentExpensesCard(
                     expenses = uiState.expenses.asSequence().sortedByDescending { it.date }.take(4).toList(),
@@ -159,7 +167,7 @@ fun HomeScreen(viewModel: AppViewModel) {
 
         }
 
-        // Floating Action Button
+        // FAB to quickly add a new expense from the dashboard
         FloatingActionButton(
             onClick = { viewModel.setScreen(AppScreen.AddExpense) },
             modifier = Modifier
@@ -174,6 +182,9 @@ fun HomeScreen(viewModel: AppViewModel) {
     }
 }
 
+/**
+ * Renders the top part of the home screen, including user greeting and a summary budget card.
+ */
 @Composable
 fun HeaderSection(
     username: String,
@@ -220,6 +231,7 @@ fun HeaderSection(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // Main budget overview card
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.15f)),
             modifier = Modifier.fillMaxWidth(),
@@ -262,6 +274,7 @@ fun HeaderSection(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // Overall budget usage progress bar
                 LinearProgressIndicator(
                     progress = { percentUsed.coerceIn(0f, 1f) },
                     modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape),
@@ -292,6 +305,9 @@ fun HeaderSection(
     }
 }
 
+/**
+ * A small card displaying a specific financial statistic.
+ */
 @Composable
 fun StatCard(
     modifier: Modifier = Modifier,
@@ -329,6 +345,9 @@ fun StatCard(
     }
 }
 
+/**
+ * A card showing a mini line chart of spending over the current month.
+ */
 @Composable
 fun SpendingTrendCard(chartPoints: List<ChartPoint>, onNavigate: () -> Unit) {
     Card(
@@ -369,13 +388,14 @@ fun SpendingTrendCard(chartPoints: List<ChartPoint>, onNavigate: () -> Unit) {
                         if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
                     }
 
+                    // Draw trend line
                     drawPath(
                         path = path,
                         color = Color(0xFF00A368), 
                         style = Stroke(width = 2.dp.toPx())
                     )
 
-                    // Fill area
+                    // Fill area under the curve
                     val fillPath = Path().apply {
                         addPath(path)
                         lineTo(width, height)
@@ -394,6 +414,9 @@ fun SpendingTrendCard(chartPoints: List<ChartPoint>, onNavigate: () -> Unit) {
     }
 }
 
+/**
+ * A card breaking down monthly spending by category with progress bars.
+ */
 @Composable
 fun CategorySpendingCard(
     categorySpending: List<CategorySpending>,
@@ -455,6 +478,7 @@ fun CategorySpendingCard(
                                 }
                             }
                         }
+                        // Progress bar for individual category budget
                         if (item.budget > 0) {
                             LinearProgressIndicator(
                                 progress = { catPercent.coerceIn(0f, 1f) },
@@ -470,6 +494,9 @@ fun CategorySpendingCard(
     }
 }
 
+/**
+ * A card displaying the most recent expense transactions.
+ */
 @Composable
 fun RecentExpensesCard(
     expenses: List<Expense>,
@@ -550,6 +577,9 @@ fun RecentExpensesCard(
     }
 }
 
+/**
+ * Maps icon names to their corresponding emoji representation.
+ */
 fun getCategoryEmoji(iconName: String): String {
     return when (iconName) {
         "shopping-cart" -> "🛒"

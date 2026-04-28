@@ -22,18 +22,30 @@ import com.example.personalbudgettrackerapp.ui.rewards.RewardsScreen
 import com.example.personalbudgettrackerapp.ui.settings.SettingsScreen
 import com.example.personalbudgettrackerapp.ui.theme.PersonalBudgetTrackerAppTheme
 
+/**
+ * The main activity of the application.
+ * This activity serves as the entry point and manages the overall UI structure,
+ * including navigation between different screens.
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Enable edge-to-edge display to allow content to be drawn under system bars
         enableEdgeToEdge()
+        
         setContent {
+            // Apply the application theme
             PersonalBudgetTrackerAppTheme {
+                // Initialize the shared ViewModel for state management
                 val appViewModel: AppViewModel = viewModel()
                 val currentScreen = appViewModel.uiState.currentScreen
                 
+                // Scaffold provides the basic material design visual layout structure
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
+                        // Display the bottom navigation bar only for specific screens
                         if (currentScreen == AppScreen.Home ||
                             currentScreen == AppScreen.Rewards ||
                             currentScreen == AppScreen.Analytics ||
@@ -43,6 +55,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) { innerPadding ->
+                    // Main content area where screens are swapped based on the current state
                     Box(modifier = Modifier.padding(innerPadding)) {
                         when (currentScreen) {
                             AppScreen.Login -> LoginScreen(appViewModel)

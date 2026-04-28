@@ -1,10 +1,11 @@
 package com.example.personalbudgettrackerapp
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toArgb
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.personalbudgettrackerapp.data.Achievement
 import com.example.personalbudgettrackerapp.data.Budget
@@ -14,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.io.File
 import java.time.LocalDate
 
 /**
@@ -65,9 +67,34 @@ data class AppUiState(
  * The central ViewModel for the application, managing state and data synchronization with Firebase.
  * It handles authentication, expense tracking, budget management, and achievement processing.
  */
-class AppViewModel : ViewModel() {
+class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    private fun getImagePath(expenseId: String): File {
+        return File(getApplication<Application>().filesDir, "receipt_$expenseId.jpg")
+    }
+
+    private fun saveImageLocally(expenseId: String, imageBytes: ByteArray) {
+        try {
+            getImagePath(expenseId).writeBytes(imageBytes)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun getImageLocally(expenseId: String): ByteArray? {
+        val file = getImagePath(expenseId)
+        return if (file.exists()) file.readBytes() else null
+    }
+
+    private fun deleteImageLocally(expenseId: String) {
+        try {
+            getImagePath(expenseId).delete()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 
     // Predefined achievements available in the app
     private val defaultAchievements = listOf(
@@ -200,7 +227,7 @@ class AppViewModel : ViewModel() {
                         val unlockedAt = doc.getLong("unlockedAt")
                         doc.id to (unlocked to unlockedAt)
                     }
-                    
+
                     val updatedAchievements = uiState.achievements.map { ach ->
                         val data = firestoreData[ach.id]
                         if (data != null) {
@@ -373,7 +400,7 @@ class AppViewModel : ViewModel() {
     /**
      * Adds a new expense entry for the authenticated user.
      */
-    fun addExpense(amount: Double, date: LocalDate, categoryId: String, description: String, onSuccess: () -> Unit) {
+    fun addExpense(amount: Double, date: LocalDate, categoryId: String, description: String, imageBytes: ByteArray? = null, onSuccess: () -> Unit) {
         val userId = auth.currentUser?.uid ?: return
         uiState = uiState.copy(isLoading = true, error = null)
         val expenseData = hashMapOf(
@@ -385,7 +412,8 @@ class AppViewModel : ViewModel() {
         )
         db.collection("users").document(userId).collection("expenses")
             .add(expenseData)
-            .addOnSuccessListener {
+            .addOnSuccessListener { docRef ->
+                imageBytes?.let { saveImageLocally(docRef.id, it) }
                 uiState = uiState.copy(isLoading = false)
                 onSuccess()
             }
@@ -401,6 +429,9 @@ class AppViewModel : ViewModel() {
         val userId = auth.currentUser?.uid ?: return
         db.collection("users").document(userId).collection("expenses").document(expenseId)
             .delete()
+            .addOnSuccessListener {
+                deleteImageLocally(expenseId)
+            }
             .addOnFailureListener { e ->
                 uiState = uiState.copy(error = e.localizedMessage)
             }

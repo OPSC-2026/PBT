@@ -1,12 +1,12 @@
 package com.example.personalbudgettrackerapp
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.personalbudgettrackerapp.data.Achievement
 import com.example.personalbudgettrackerapp.data.Budget
 import com.example.personalbudgettrackerapp.data.Category
 import com.example.personalbudgettrackerapp.data.Expense
@@ -15,8 +15,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
-
-private const val TAG = "AppViewModel"
 
 sealed interface AppScreen {
     data object Login : AppScreen
@@ -47,37 +45,48 @@ data class AppUiState(
     val error: String? = null,
     val categories: List<Category> = emptyList(),
     val expenses: List<Expense> = emptyList(),
-    val budgets: List<Budget> = emptyList()
+    val budgets: List<Budget> = emptyList(),
+    val achievements: List<Achievement> = emptyList()
 )
 
 class AppViewModel : ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 
+    private val defaultAchievements = listOf(
+        Achievement("1", "Budget Master", "Stay within budget for a month", "trophy", false, null, 0f, "budget_master"),
+        Achievement("2", "Expense Tracker", "Log expenses 7 days in a row", "calendar-check", false, null, 0f, "expense_tracker"),
+        Achievement("3", "Saving Champion", "Use less than 80% of your budget", "piggy-bank", false, null, 0f, "saving_champion"),
+        Achievement("4", "First Step", "Add your first expense", "footprints", false, null, 0f, "first_expense"),
+        Achievement("5", "Category Creator", "Create a custom category", "folder-plus", false, null, 0f, "category_creator")
+    )
+
     var uiState by mutableStateOf(
         AppUiState(
-            currentScreen = if (auth.currentUser != null) AppScreen.Home else AppScreen.Login
+            currentScreen = if (auth.currentUser != null) AppScreen.Home else AppScreen.Login,
+            achievements = defaultAchievements
         )
     )
         private set
 
     init {
         if (auth.currentUser != null) {
-            observeCategories()
-            observeExpenses()
-            observeBudgets()
+            observeData()
         }
+    }
+
+    private fun observeData() {
+        observeCategories()
+        observeExpenses()
+        observeBudgets()
+        observeAchievements()
     }
 
     private fun observeCategories() {
         val userId = auth.currentUser?.uid ?: return
         db.collection("users").document(userId).collection("categories")
             .addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    Log.e(TAG, "Listen failed.", e)
-                    return@addSnapshotListener
-                }
-
+                if (e != null) return@addSnapshotListener
                 if (snapshot != null) {
                     val categories = snapshot.documents.mapNotNull { doc ->
                         try {
@@ -88,12 +97,10 @@ class AppViewModel : ViewModel() {
                                 icon = doc.getString("icon") ?: "",
                                 isDefault = doc.getBoolean("isDefault") ?: false
                             )
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error parsing category", e)
-                            null
-                        }
+                        } catch (_: Exception) { null }
                     }
                     uiState = uiState.copy(categories = categories)
+                    checkAchievements()
                 }
             }
     }
@@ -102,11 +109,7 @@ class AppViewModel : ViewModel() {
         val userId = auth.currentUser?.uid ?: return
         db.collection("users").document(userId).collection("expenses")
             .addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    Log.e(TAG, "Expenses listen failed.", e)
-                    return@addSnapshotListener
-                }
-
+                if (e != null) return@addSnapshotListener
                 if (snapshot != null) {
                     val expenses = snapshot.documents.mapNotNull { doc ->
                         try {
@@ -117,12 +120,10 @@ class AppViewModel : ViewModel() {
                                 categoryId = doc.getString("categoryId") ?: "",
                                 description = doc.getString("description") ?: ""
                             )
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error parsing expense", e)
-                            null
-                        }
+                        } catch (_: Exception) { null }
                     }
                     uiState = uiState.copy(expenses = expenses.sortedByDescending { it.date })
+                    checkAchievements()
                 }
             }
     }
@@ -131,21 +132,13 @@ class AppViewModel : ViewModel() {
         val userId = auth.currentUser?.uid ?: return
         db.collection("users").document(userId).collection("budgets")
             .addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    Log.e(TAG, "Budgets listen failed.", e)
-                    return@addSnapshotListener
-                }
-
+                if (e != null) return@addSnapshotListener
                 if (snapshot != null) {
                     val budgets = snapshot.documents.mapNotNull { doc ->
                         try {
                             val categoryBudgetsRaw = doc.get("categoryBudgets") as? Map<String, Any> ?: emptyMap()
-                            val categoryBudgets = categoryBudgetsRaw.mapValues { (_, value) ->
-                                when (value) {
-                                    is Double -> value
-                                    is Long -> value.toDouble()
-                                    else -> 0.0
-                                }
+                            val categoryBudgets = categoryBudgetsRaw.mapValues { (_, v) ->
+                                when (v) { is Double -> v; is Long -> v.toDouble(); else -> 0.0 }
                             }
                             Budget(
                                 id = doc.id,
@@ -154,14 +147,119 @@ class AppViewModel : ViewModel() {
                                 totalBudget = doc.getDouble("totalBudget") ?: 0.0,
                                 categoryBudgets = categoryBudgets
                             )
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error parsing budget", e)
-                            null
-                        }
+                        } catch (_: Exception) { null }
                     }
                     uiState = uiState.copy(budgets = budgets)
+                    checkAchievements()
                 }
             }
+    }
+
+    private fun observeAchievements() {
+        val userId = auth.currentUser?.uid ?: return
+        db.collection("users").document(userId).collection("achievements")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) return@addSnapshotListener
+                if (snapshot != null) {
+                    val firestoreData = snapshot.documents.associate { doc ->
+                        val unlocked = doc.getBoolean("unlocked") ?: false
+                        val unlockedAt = doc.getLong("unlockedAt")
+                        doc.id to (unlocked to unlockedAt)
+                    }
+                    
+                    val updatedAchievements = uiState.achievements.map { ach ->
+                        val data = firestoreData[ach.id]
+                        if (data != null) {
+                            ach.copy(unlocked = data.first, unlockedAt = data.second)
+                        } else ach
+                    }
+                    uiState = uiState.copy(achievements = updatedAchievements)
+                    checkAchievements()
+                }
+            }
+    }
+
+    private fun checkAchievements() {
+        val expenses = uiState.expenses
+        val categories = uiState.categories
+        val budgets = uiState.budgets
+        val now = LocalDate.now()
+        val currentBudget = budgets.find { it.month == now.monthValue && it.year == now.year }
+        val monthlyExpenses = expenses.filter { it.date.monthValue == now.monthValue && it.date.year == now.year }
+        val totalSpent = monthlyExpenses.sumOf { it.amount }
+
+        var anyUpdated = false
+        val updatedList = uiState.achievements.map { achievement ->
+            if (achievement.unlocked) return@map achievement
+
+            var progress = 0f
+            var shouldUnlock = false
+
+            when (achievement.condition) {
+                "first_expense" -> {
+                    shouldUnlock = expenses.isNotEmpty()
+                    progress = if (shouldUnlock) 100f else 0f
+                }
+                "category_creator" -> {
+                    shouldUnlock = categories.any { !it.isDefault }
+                    progress = if (shouldUnlock) 100f else 0f
+                }
+                "saving_champion" -> {
+                    if (currentBudget != null && currentBudget.totalBudget > 0) {
+                        shouldUnlock = totalSpent > 0 && totalSpent <= currentBudget.totalBudget * 0.8
+                        progress = ((totalSpent / (currentBudget.totalBudget * 0.8)) * 100).toFloat().coerceIn(0f, 100f)
+                    }
+                }
+                "budget_master" -> {
+                    if (currentBudget != null && currentBudget.totalBudget > 0) {
+                        shouldUnlock = totalSpent > 0 && totalSpent <= currentBudget.totalBudget
+                        progress = ((totalSpent / currentBudget.totalBudget) * 100).toFloat().coerceIn(0f, 100f)
+                    }
+                }
+                "expense_tracker" -> {
+                    val dates = expenses.map { it.date }.distinct().sortedDescending()
+                    var consecutive = 0
+                    if (dates.isNotEmpty()) {
+                        var current = LocalDate.now()
+                        for (date in dates) {
+                            if (date == current) {
+                                consecutive++
+                                current = current.minusDays(1)
+                            } else if (date.isBefore(current)) {
+                                break
+                            }
+                        }
+                    }
+                    shouldUnlock = consecutive >= 7
+                    progress = (consecutive.toFloat() / 7f * 100f).coerceIn(0f, 100f)
+                }
+            }
+
+            if (shouldUnlock) {
+                unlockAchievement(achievement.id)
+                anyUpdated = true
+                achievement.copy(unlocked = true, unlockedAt = System.currentTimeMillis(), progress = 100f)
+            } else if (progress != achievement.progress) {
+                anyUpdated = true
+                achievement.copy(progress = progress)
+            } else {
+                achievement
+            }
+        }
+
+        if (anyUpdated) {
+            uiState = uiState.copy(achievements = updatedList)
+        }
+    }
+
+    private fun unlockAchievement(id: String) {
+        val userId = auth.currentUser?.uid ?: return
+        val data = hashMapOf(
+            "unlocked" to true,
+            "unlockedAt" to System.currentTimeMillis()
+        )
+        db.collection("users").document(userId).collection("achievements").document(id)
+            .set(data, com.google.firebase.firestore.SetOptions.merge())
     }
 
     fun setScreen(screen: AppScreen) {
@@ -177,16 +275,10 @@ class AppViewModel : ViewModel() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    observeCategories()
-                    observeExpenses()
-                    observeBudgets()
+                    observeData()
                     uiState = uiState.copy(currentScreen = AppScreen.Home, isLoading = false)
                 } else {
-                    Log.e(TAG, "Login failed", task.exception)
-                    uiState = uiState.copy(
-                        error = task.exception?.localizedMessage ?: "Invalid email or password",
-                        isLoading = false
-                    )
+                    uiState = uiState.copy(error = task.exception?.localizedMessage ?: "Invalid email or password", isLoading = false)
                 }
             }
     }
@@ -211,17 +303,11 @@ class AppViewModel : ViewModel() {
                     val user = auth.currentUser
                     val profileUpdates = com.google.firebase.auth.userProfileChangeRequest { displayName = name }
                     user?.updateProfile(profileUpdates)?.addOnCompleteListener { _ ->
-                        observeCategories()
-                        observeExpenses()
-                        observeBudgets()
+                        observeData()
                         uiState = uiState.copy(currentScreen = AppScreen.Home, isLoading = false)
                     }
                 } else {
-                    Log.e(TAG, "Registration failed", task.exception)
-                    uiState = uiState.copy(
-                        error = task.exception?.localizedMessage ?: "Registration failed",
-                        isLoading = false
-                    )
+                    uiState = uiState.copy(error = task.exception?.localizedMessage ?: "Registration failed", isLoading = false)
                 }
             }
     }
@@ -261,21 +347,15 @@ class AppViewModel : ViewModel() {
             }
     }
 
-    /**
-     * Updates the total budget or category limits for a specific month.
-     * Uses the format "YYYY_MM" as document ID.
-     */
     fun updateBudget(month: Int, year: Int, total: Double, categoryLimits: Map<String, Double>) {
         val userId = auth.currentUser?.uid ?: return
         val budgetId = "${year}_${String.format("%02d", month)}"
-        
         val budgetData = hashMapOf(
             "month" to month,
             "year" to year,
             "totalBudget" to total,
             "categoryBudgets" to categoryLimits
         )
-
         db.collection("users").document(userId).collection("budgets").document(budgetId)
             .set(budgetData)
             .addOnFailureListener { e ->
@@ -283,102 +363,55 @@ class AppViewModel : ViewModel() {
             }
     }
 
-    /**
-     * Deletes a specific category from the user's Firestore collection.
-     * Updates [uiState] to reflect loading and potential error states.
-     *
-     * @param categoryId The unique identifier of the category to be deleted.
-     * @param onSuccess Callback triggered after successful deletion.
-     */
     fun deleteCategory(categoryId: String, onSuccess: () -> Unit = {}) {
         val userId = auth.currentUser?.uid ?: return
-
         uiState = uiState.copy(isLoading = true, error = null)
-
         viewModelScope.launch {
             try {
-                db.collection("users").document(userId)
-                    .collection("categories").document(categoryId)
-                    .delete()
-                    .await()
-
-                Log.d(TAG, "Category deleted: $categoryId")
+                db.collection("users").document(userId).collection("categories").document(categoryId).delete().await()
                 uiState = uiState.copy(isLoading = false)
                 onSuccess()
             } catch (e: Exception) {
-                Log.e(TAG, "Error deleting category", e)
                 uiState = uiState.copy(isLoading = false, error = e.localizedMessage)
             }
         }
     }
 
-    /**
-     * Updates an existing category's information in Firestore.
-     * Converts the category's color to an ARGB integer for storage.
-     *
-     * @param category The [Category] object containing the updated data.
-     * @param onSuccess Callback triggered after the update is successfully persisted.
-     */
     fun updateCategory(category: Category, onSuccess: () -> Unit = {}) {
         val userId = auth.currentUser?.uid ?: return
-
         uiState = uiState.copy(isLoading = true, error = null)
-
         val categoryData = hashMapOf(
             "name" to category.name,
             "color" to category.color.toArgb(),
             "icon" to category.icon,
             "isDefault" to category.isDefault
         )
-
         viewModelScope.launch {
             try {
-                db.collection("users").document(userId)
-                    .collection("categories").document(category.id)
-                    .set(categoryData)
-                    .await()
-
-                Log.d(TAG, "Category updated: ${category.id}")
+                db.collection("users").document(userId).collection("categories").document(category.id).set(categoryData).await()
                 uiState = uiState.copy(isLoading = false)
                 onSuccess()
             } catch (e: Exception) {
-                Log.e(TAG, "Error updating category", e)
                 uiState = uiState.copy(isLoading = false, error = e.localizedMessage)
             }
         }
     }
 
-    /**
-     * Adds a new category to the user's Firestore collection.
-     * The Firestore document ID is automatically generated upon addition.
-     *
-     * @param category The [Category] data to be saved as a new category.
-     * @param onSuccess Callback triggered after the new category is successfully added.
-     */
     fun addCategory(category: Category, onSuccess: () -> Unit = {}) {
         val userId = auth.currentUser?.uid ?: return
-
         uiState = uiState.copy(isLoading = true, error = null)
-
         val categoryData = hashMapOf(
             "name" to category.name,
             "color" to category.color.toArgb(),
             "icon" to category.icon,
             "isDefault" to category.isDefault
         )
-
         viewModelScope.launch {
             try {
-                db.collection("users").document(userId)
-                    .collection("categories")
-                    .add(categoryData)
-                    .await()
-
-                Log.d(TAG, "Category added: ${category.name}")
+                db.collection("users").document(userId).collection("categories").add(categoryData).await()
                 uiState = uiState.copy(isLoading = false)
                 onSuccess()
             } catch (e: Exception) {
-                Log.e(TAG, "Error adding category", e)
                 uiState = uiState.copy(isLoading = false, error = e.localizedMessage)
             }
         }

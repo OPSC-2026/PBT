@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,77 +21,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.personalbudgettrackerapp.AppViewModel
-import com.example.personalbudgettrackerapp.ui.theme.Yellow
+import com.example.personalbudgettrackerapp.data.Achievement
 import java.text.SimpleDateFormat
 import java.util.*
 
-data class Achievement(
-    val id: String,
-    val name: String,
-    val description: String,
-    val icon: ImageVector,
-    val unlocked: Boolean,
-    val unlockedAt: Long? = null,
-    val progress: Float = 0f,
-    val condition: String
-)
-
 @Composable
 fun RewardsScreen(viewModel: AppViewModel) {
-    val achievements = remember {
-        listOf(
-            Achievement(
-                id = "1", 
-                name = "Budget Master", 
-                description = "Stay within budget for a month", 
-                icon = Icons.Default.EmojiEvents,
-                unlocked = true,
-                progress = 50f,
-                condition = "budget_master"
-            ),
-            Achievement(
-                id = "2", 
-                name = "Expense Tracker", 
-                description = "Log expenses 7 days in a row", 
-                icon = Icons.Default.CalendarToday,
-                unlocked = false,
-                progress = 40f,
-                condition = "expense_tracker"
-            ),
-            Achievement(
-                id = "3", 
-                name = "Saving Champion", 
-                description = "Use less than 80% of your budget", 
-                icon = Icons.Default.Savings,
-                unlocked = false,
-                progress = 10f,
-                condition = "saving_champion"
-            ),
-            Achievement(
-                id = "4", 
-                name = "First Step", 
-                description = "Add your first expense", 
-                icon = Icons.Default.Star,
-                unlocked = true,
-                unlockedAt = System.currentTimeMillis() - 86400000,
-                progress = 100f,
-                condition = "first_expense"
-            ),
-            Achievement(
-                id = "5", 
-                name = "Category Creator", 
-                description = "Create a custom category", 
-                icon = Icons.Default.CreateNewFolder,
-                unlocked = false,
-                progress = 0f,
-                condition = "category_creator"
-            )
-        )
-    }
+    val uiState = viewModel.uiState
+    val achievements = uiState.achievements
 
     val unlockedCount = achievements.count { it.unlocked }
     val totalCount = achievements.size
-    val progress = (unlockedCount.toFloat() / totalCount)
+    val progress = if (totalCount > 0) (unlockedCount.toFloat() / totalCount) else 0f
 
     LazyColumn(
         modifier = Modifier.fillMaxSize()
@@ -130,6 +70,10 @@ fun RewardsScreen(viewModel: AppViewModel) {
 
         item {
             MotivationalCard()
+        }
+        
+        item {
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }
@@ -313,7 +257,7 @@ fun AchievementUnlocked(achievement: Achievement) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = achievement.icon,
+                    imageVector = getAchievementIcon(achievement.iconId),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(28.dp)
@@ -384,7 +328,7 @@ fun AchievementLocked(achievement: Achievement) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = achievement.icon,
+                    imageVector = getAchievementIcon(achievement.iconId),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                     modifier = Modifier.size(28.dp)
@@ -473,7 +417,7 @@ fun MotivationalCard() {
             Icon(
                 imageVector = Icons.Default.AutoAwesome,
                 contentDescription = null,
-                tint = Yellow,
+                tint = Color(0xFFFACC15),
                 modifier = Modifier.size(32.dp)
             )
 
@@ -491,5 +435,16 @@ fun MotivationalCard() {
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
+    }
+}
+
+fun getAchievementIcon(iconId: String): ImageVector {
+    return when (iconId) {
+        "trophy" -> Icons.Default.EmojiEvents
+        "calendar-check" -> Icons.Default.CalendarMonth
+        "piggy-bank" -> Icons.Default.Savings
+        "footprints" -> Icons.Default.Star
+        "folder-plus" -> Icons.Default.CreateNewFolder
+        else -> Icons.Default.EmojiEvents
     }
 }

@@ -27,6 +27,17 @@ data class Budget(
     val categoryBudgets: Map<String, Double>
 )
 
+data class Achievement(
+    val id: String,
+    val name: String,
+    val description: String,
+    val iconId: String,
+    val unlocked: Boolean,
+    val unlockedAt: Long? = null,
+    val progress: Float = 0f,
+    val condition: String
+)
+
 enum class TimeRange {
     WEEK, MONTH, YEAR
 }

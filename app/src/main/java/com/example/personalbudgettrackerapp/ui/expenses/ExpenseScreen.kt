@@ -5,10 +5,8 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -29,6 +27,7 @@ import com.example.personalbudgettrackerapp.AppScreen
 import com.example.personalbudgettrackerapp.AppViewModel
 import com.example.personalbudgettrackerapp.data.Category
 import com.example.personalbudgettrackerapp.data.Expense
+import com.example.personalbudgettrackerapp.data.getCategoryIcon
 import com.example.personalbudgettrackerapp.ui.components.CustomDatePicker
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -123,7 +122,7 @@ fun ExpenseScreen(viewModel: AppViewModel) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Total: R${String.format("%.2f", totalFiltered)}",
+                            text = "Total: R${String.format(Locale.US, "%.2f", totalFiltered)}",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -142,7 +141,7 @@ fun ExpenseScreen(viewModel: AppViewModel) {
                 ) {
                     groupedExpenses.forEach { (date, dayExpenses) ->
                         item(key = date) {
-                            val formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy", Locale("en", "ZA"))
+                            val formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy", Locale.Builder().setLanguage("en").setRegion("ZA").build())
                             Text(
                                 text = date.format(formatter).uppercase(),
                                 style = MaterialTheme.typography.labelSmall,
@@ -354,7 +353,7 @@ fun ExpenseItem(expense: Expense, category: Category?, onClick: () -> Unit) {
                 }
             }
             Text(
-                text = "-R${String.format("%.2f", expense.amount)}",
+                text = "-R${String.format(Locale.US, "%.2f", expense.amount)}",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.error
@@ -438,11 +437,11 @@ fun ExpenseDetailDialog(expense: Expense, category: Category?, onDismiss: () -> 
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Amount", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("-R${String.format("%.2f", expense.amount)}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                        Text("-R${String.format(Locale.US, "%.2f", expense.amount)}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
                     }
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Date", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale("en", "ZA"))
+                        val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.Builder().setLanguage("en").setRegion("ZA").build())
                         Text(expense.date.format(formatter), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
                     }
                 }
@@ -461,19 +460,5 @@ fun ExpenseDetailDialog(expense: Expense, category: Category?, onDismiss: () -> 
                 }
             }
         }
-    }
-}
-
-fun getCategoryIcon(iconName: String): String {
-    return when (iconName) {
-        "shopping-cart" -> "🛒"
-        "car" -> "🚗"
-        "gamepad-2" -> "🎮"
-        "zap" -> "⚡"
-        "utensils" -> "🍽️"
-        "home" -> "🏠"
-        "heart" -> "❤️"
-        "briefcase" -> "💼"
-        else -> "📦"
     }
 }

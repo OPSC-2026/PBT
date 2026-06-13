@@ -23,12 +23,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.personalbudgettrackerapp.AppScreen
 import com.example.personalbudgettrackerapp.AppViewModel
+import com.example.personalbudgettrackerapp.ThemeMode
 import com.example.personalbudgettrackerapp.data.getCategoryIcon
 import com.google.firebase.auth.FirebaseAuth
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlinx.coroutines.delay
+
+// Opções de tema com ícone e label
+private enum class ThemeOption(val mode: ThemeMode, val label: String, val icon: ImageVector) {
+    SYSTEM(ThemeMode.SYSTEM, "System", Icons.Default.BrightnessMedium),
+    LIGHT(ThemeMode.LIGHT,  "Light",  Icons.Default.LightMode),
+    DARK(ThemeMode.DARK,    "Dark",   Icons.Default.DarkMode)
+}
 
 /**
  * The Settings Screen allows users to manage their profile and financial targets.
@@ -41,7 +49,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
     val username = user?.displayName ?: "User"
     val uiState = viewModel.uiState
     val categories = uiState.categories
-    
+
     // Calculate the user's membership duration
     val creationDate = user?.metadata?.creationTimestamp?.let {
         val date = Date(it)
@@ -67,7 +75,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
         if (totalBudget.isEmpty() && currentBudget != null) {
             totalBudget = if (currentBudget.totalBudget > 0) currentBudget.totalBudget.toString() else ""
         }
-        
+
         val newMap = categoryBudgetsLocal.toMutableMap()
         categories.forEach { cat ->
             if (!newMap.containsKey(cat.id)) {
@@ -168,6 +176,66 @@ fun SettingsScreen(viewModel: AppViewModel) {
                     }
                 }
 
+                // App Theme Card
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.BrightnessMedium,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "Appearance",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        Text(
+                            text = "Choose your preferred theme",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            ThemeOption.entries.forEach { option ->
+                                FilterChip(
+                                    selected = viewModel.themeMode == option.mode,
+                                    onClick = { viewModel.setThemeMode(option.mode) },
+                                    label = {
+                                        Text(
+                                            text = option.label,
+                                            style = MaterialTheme.typography.labelMedium
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            option.icon,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+                    }
+                }
+
+
                 // Overall Monthly Budget configuration
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -180,9 +248,9 @@ fun SettingsScreen(viewModel: AppViewModel) {
                             Text(text = "Monthly Budget", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                         }
                         Text(text = monthName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        
+
                         Spacer(modifier = Modifier.height(16.dp))
-                        
+
                         Text(text = "Total Budget", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         OutlinedTextField(
                             value = totalBudget,
@@ -209,7 +277,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
                             Text(text = "Category Budgets", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                         }
                         Text(text = "Set spending limits per category", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        
+
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Render an input field for each category
@@ -283,7 +351,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
 
                 // Primary action to persist budget changes
                 Button(
-                    onClick = { 
+                    onClick = {
                         val finalLimits = categoryBudgetsLocal.mapValues { it.value.toDoubleOrNull() ?: 0.0 }
                         viewModel.updateBudget(
                             month = now.monthValue,
@@ -291,7 +359,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
                             total = totalBudgetValue,
                             categoryLimits = finalLimits
                         )
-                        saved = true 
+                        saved = true
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -306,6 +374,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
                         Text(text = "Save Budget Settings", fontWeight = FontWeight.Medium)
                     }
                 }
+
 
                 // Secondary navigation and account actions
                 Card(
@@ -332,7 +401,7 @@ fun SettingsScreen(viewModel: AppViewModel) {
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }

@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -30,17 +31,25 @@ import com.example.personalbudgettrackerapp.ui.theme.PersonalBudgetTrackerAppThe
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         // Enable edge-to-edge display to allow content to be drawn under system bars
         enableEdgeToEdge()
-        
+
         setContent {
+            // Initialize the shared ViewModel for state management
+            val appViewModel: AppViewModel = viewModel()
+
+            // Calcula o darkTheme com base na preferência do utilizador
+            val darkTheme = when (appViewModel.themeMode) {
+                ThemeMode.DARK -> true
+                ThemeMode.LIGHT -> false
+                ThemeMode.SYSTEM -> isSystemInDarkTheme()
+            }
+
             // Apply the application theme
-            PersonalBudgetTrackerAppTheme {
-                // Initialize the shared ViewModel for state management
-                val appViewModel: AppViewModel = viewModel()
+            PersonalBudgetTrackerAppTheme(darkTheme = darkTheme) {
                 val currentScreen = appViewModel.uiState.currentScreen
-                
+
                 // Scaffold provides the basic material design visual layout structure
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),

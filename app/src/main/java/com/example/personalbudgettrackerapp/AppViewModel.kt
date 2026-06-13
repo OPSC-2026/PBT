@@ -63,6 +63,13 @@ data class AppUiState(
     val achievements: List<Achievement> = emptyList()
 )
 
+enum class ThemeMode {
+    SYSTEM,  // Segue o tema do telemóvel
+    LIGHT,   // Sempre claro
+    DARK     // Sempre escuro
+}
+// ───────────────────────────────────────────────────────────────────────────
+
 /**
  * The central ViewModel for the application, managing state and data synchronization with Firebase.
  * It handles authentication, expense tracking, budget management, and achievement processing.
@@ -71,6 +78,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 
+    private var _themeMode by mutableStateOf(ThemeMode.SYSTEM)
+    val themeMode: ThemeMode get() = _themeMode
     private fun getImagePath(expenseId: String): File {
         return File(getApplication<Application>().filesDir, "receipt_$expenseId.jpg")
     }
@@ -119,6 +128,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         if (auth.currentUser != null) {
             observeData()
         }
+    }
+
+    fun setThemeMode(mode: ThemeMode) {
+        _themeMode = mode
     }
 
     /**
@@ -281,7 +294,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 }
                 "expense_tracker" -> {
-                    // Check for consecutive days of logging expenses
                     val dates = expenses.map { it.date }.distinct().sortedDescending()
                     var consecutive = 0
                     if (dates.isNotEmpty()) {

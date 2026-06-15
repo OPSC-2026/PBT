@@ -4,25 +4,32 @@
 Montrack is a professional personal finance management application designed to facilitate rigorous tracking of spending habits and the achievement of financial goals. The platform provides users with an intuitive interface to monitor expenses, manage budgets, and gain insights into their financial health through detailed analytics.
 
 ## Core Features
-- **User Authentication**: Secure account creation and management utilizing Firebase Authentication services.
-- **Financial Tracking**: Detailed logging of individual expenses with attributes for amount, category, date, and description.
-- **Budget Management**: Advanced monthly budget configuration including the ability to allocate specific limits to distinct spending categories.
-- **Analytical Insights**: Comprehensive data visualization featuring spending trend analysis, category-based distribution, and budget performance metrics.
-- **Gamified Achievements**: A reward system designed to encourage consistent financial tracking through the unlocking of milestone-based badges.
-* **Category Management**: Tools for defining and customizing spending categories with unique visual identifiers.
-- **Adaptive UI**: High-performance user interface built with Jetpack Compose, featuring full support for both light and dark system themes.
+- **User Authentication:** Secure account creation and login using Firebase Authentication.
+- **Financial Tracking:** Log expenses with amount, category, date, and description.
+- **Budget Management:** Monthly budgets with category-based limits and real-time tracking.
+- **Analytical Insights:** Visual reports of spending trends, category breakdowns, and budget performance.
+- **Gamified Achievements:** Unlock milestones based on financial tracking consistency.
+- **Category Management:** Create and customize spending categories with unique visuals.
+- **Push Notifications (FCM):** Firebase Cloud Messaging integration using `MyFirebaseMessagingService` to handle notification and data payloads, delivering real-time updates to users.
+- **Theme Switching 🌗:** Manual in-app toggle between Light and Dark mode using Material 3 dynamic theming.
+- **Adaptive UI**: Built with Jetpack Compose for a responsive, modern, and reactive user experience.
 
 ## Technical Architecture
-- **Programming Language**: Kotlin
-- **User Interface**: Jetpack Compose (Material 3)
-- **Database and Auth**: Firebase Cloud Firestore and Firebase Authentication
-- **Design Pattern**: MVVM (Model-View-ViewModel)
-- **Asynchronous Processing**: Kotlin Coroutines and Flow
+- **Language:** Kotlin  
+- **UI:** Jetpack Compose (Material 3)  
+- **Architecture:** MVVM (Model-View-ViewModel)  
+- **Asynchronous Handling:** Kotlin Coroutines + Flow  
+- **Backend Services:**
+  - Firebase Authentication  
+  - Cloud Firestore  
+  - Firebase Cloud Messaging (FCM)  
+- **Theme System:** Runtime Compose-based theme switching (Light/Dark)
 
 ## Project Directory Structure
 - `app/src/main/java/com/example/personalbudgettrackerapp/`
     - `ui/`: Implementation of all Composable screens and reusable components.
     - `data/`: Definitions for data models and persistence logic.
+    - `notifications/`: Firebase Messaging service (FCM)
     - `AppViewModel.kt`: Core application logic, state management, and external service integration.
     - `MainActivity.kt`: Primary activity responsible for navigation orchestration.
 
@@ -36,7 +43,7 @@ The application utilizes a reactive state management approach, where the central
 4. JDK 17 or higher.
 
 ## Video Presentation
-[Watch Here](https://youtu.be/HCPA5yylDG0)
+[Watch Here](https://youtu.be/eiMg7ZuNves)
 
 ## Download do App (APK)
 [Download Here](https://github.com/OPSC-2026/PBT/blob/main/buildActionResult/app-release-unsigned.apk)
